@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [[ -z $GOPATH ]] ; then
+	echo "GOPATH was not set!"
+	exit 1
+fi
+if (( $# != 1 )) ; then
+	echo "$(basename $0) plugin-name"
+	exit 0
+else
+set -x
+	_plugin=$1
+	shift
+	${GOPATH}/bin/$_plugin	\
+		-config  ${GOPATH}/src/github.com/my10c/etc/nagios-plugins.yaml $*
+	exit $?
+fi

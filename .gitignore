@@ -1,4 +1,5 @@
-vendor/*
+etc/*
 lumberjack.v2.hash
 glide.lock
 glide.yaml
+vendor/*
