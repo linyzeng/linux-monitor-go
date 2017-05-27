@@ -1,0 +1,10 @@
+check_mysql:
+  username: momo
+  password: momo
+  hostname: momoville
+  database: MONITOR
+  port: 3306
+
+# comment
+common:
+  debug: true
