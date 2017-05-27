@@ -46,6 +46,7 @@ import (
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 	myMySQL		"github.com/my10c/nagios-plugins-go/mysql"
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
 )
 
 const (
@@ -55,6 +56,8 @@ const (
 
 var (
 	cfgRequired = []string{"username", "password", "database", "hostname", "port"}
+	err error
+	exitVal int = 0
 )
 
 func wrongMode() {
@@ -70,24 +73,41 @@ func wrongMode() {
 
 func main() {
 	cfgFile, checkMode := myInit.InitArgs(cfgRequired)
+	switch checkMode {
+		case "slavelag":
+			cfgRequired = append(cfgRequired, "lagwarning")
+			cfgRequired = append(cfgRequired, "lagcritical")
+		case "process":
+			cfgRequired = append(cfgRequired, "processwarning" )
+			cfgRequired = append(cfgRequired, "processcritical" )
+		case "dropcreate":
+			cfgRequired = append(cfgRequired, "tablename" )
+	}
 	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
 	myInit.InitLog(cfgDict)
 	myUtils.SignalHandler()
 	dbCheck := myMySQL.New(cfgDict)
-	data := time.Now().String()
+	data := time.Now().Format(time.RFC3339)
 	switch checkMode {
 		case "basic":
-			dbCheck.BasisCheck(table, field, data)
+			exitVal, err = dbCheck.BasisCheck(table, field, data)
 		case "slavestatus":
-			dbCheck.SlaveStatusCheck()
+			exitVal, err = dbCheck.SlaveStatusCheck()
 		case "slavelag":
-			dbCheck.SlaveLagCheck()
+			warning, critical, _ := myThreshold.SanityCheck(cfgDict["lagwarning"], cfgDict["lagcritical"])
+			exitVal, err = dbCheck.SlaveLagCheck(warning, critical)
 		case "process":
-			dbCheck.ProcessStatusCheck()
+			warning, critical, _ := myThreshold.SanityCheck(cfgDict["processwarning"], cfgDict["processcritical"])
+			exitVal, err = dbCheck.ProcessStatusCheck(warning, critical)
 		case "dropcreate":
-			dbCheck.DropCreateCheck()
+			exitVal, err = dbCheck.DropCreateCheck(cfgDict["tablename"])
 		default:
 			wrongMode()
 	}
-	os.Exit(0)
+	if err != nil {
+		fmt.Printf("%s %s:%s\n", err, myGlobal.MyProgname, checkMode)
+		os.Exit(exitVal)
+	}
+	fmt.Printf("OK, %s:%s\n", myGlobal.MyProgname, checkMode)
+	os.Exit(exitVal)
 }

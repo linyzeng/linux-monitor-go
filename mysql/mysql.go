@@ -67,72 +67,133 @@ func New(mysqlCfg map[string]string) *dbMysql {
 
 func (db *dbMysql) CheckWrite(table string, field string, data string) error {
 	// Prepare statement for inserting data
-	stmtWrite, err := db.Prepare("INSERT INTO ? (?) VALUES(?)")
+	stmt := fmt.Sprintf("INSERT INTO %s (%s) VALUE ('%s')", table, field, data)
+	stmtWrite, err := db.Prepare(stmt)
 	myUtils.ExitIfError(err)
 	// make sure to close the statement
 	defer stmtWrite.Close()
-	_, err = stmtWrite.Exec(table, field, data)
+	_, err = stmtWrite.Exec()
 	return err
 }
 
-func (db *dbMysql) CheckRead(table string, data string) error {
+func (db *dbMysql) CheckRead(table string, field string, data string) error {
 	// Prepare statement for reading the data
-	stmtRead, err := db.Prepare("SELECT * FROM ?")
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = '%s'", table, field, data)
+	stmtRead, err := db.Prepare(stmt)
 	myUtils.ExitIfError(err)
 	// make sure to close the statement
 	defer stmtRead.Close()
-	_, err = stmtRead.Exec(table, data)
+	_, err = stmtRead.Exec()
 	return err
 }
 
 func (db *dbMysql) CheckDelete(table string, field string, data string) error {
 	// Prepare statement for delete the data
-	stmtDelete, err := db.Prepare("DELETE FROM ? WHERE ? = ?")
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE %s = '%s'", table, field, data)
+	stmtDelete, err := db.Prepare(stmt)
 	myUtils.ExitIfError(err)
 	// make sure to close the statement
 	defer stmtDelete.Close()
-	_, err = stmtDelete.Exec(table, field, data)
+	_, err = stmtDelete.Exec()
 	return err
 }
 
-func (db *dbMysql) BasisCheck(table string, field string,  data string) error{
+func (db *dbMysql) CreateTable(table string) error {
+	// Prepare statement to create a table
+	stmt := fmt.Sprintf("CREATE TABLE %s (timestamp varchar(128))", table)
+	stmtCreate, err := db.Prepare(stmt)
+	myUtils.ExitIfError(err)
+	// make sure to close the statement
+	defer stmtCreate.Close()
+	_, err = stmtCreate.Exec()
+	return err
+}
+
+func (db *dbMysql) DropTable(table string) error {
+	// Prepare statement to drop a table
+	stmt := fmt.Sprintf("DROP TABLE %s", table)
+	stmtCreate, err := db.Prepare(stmt)
+	myUtils.ExitIfError(err)
+	// make sure to close the statement
+	defer stmtCreate.Close()
+	_, err = stmtCreate.Exec()
+	return err
+}
+
+func (db *dbMysql) BasisCheck(table string, field string,  data string)  (int, error) {
 	if err := db.CheckWrite(table, field, data); err != nil {
 		db.Close()
-		return err
+		return 2, err
 	}
-
-	if err := db.CheckRead(table, data); err != nil {
+	if err := db.CheckRead(table, field, data); err != nil {
 		db.Close()
-		return err
+		return 2, err
 	}
-
 	if err := db.CheckDelete(table, field, data); err != nil {
 		db.Close()
-		return err
+		return 2, err
 	}
-	return nil
+	return 0, nil
 }
 
-func (db *dbMysql) SlaveStatusCheck() {
-	// TODO:
-	fmt.Printf("SlaveStatusCheck not implemented yet\n")
-	return
+func (db *dbMysql) SlaveStatusCheck()  (int, error) {
+	stmt := fmt.Sprintf("SHOW SLAVE STATUS")
+	stmtStatus, err := db.Prepare(stmt)
+	myUtils.ExitIfError(err)
+	// make sure to close the statement
+	defer stmtStatus.Close()
+	rows, err := stmtStatus.Query()
+	// make sure to close the query
+	defer rows.Close()
+	if err != nil {
+		db.Close()
+		return 3, err
+	}
+	fmt.Printf("\n %s \n\n", rows)
+	return 0, nil
 }
 
-func (db *dbMysql) SlaveLagCheck() {
-	// TODO: need threshold
-	fmt.Printf("SlaveLagCheck not implemented yet\n")
-	return
+func (db *dbMysql) SlaveLagCheck(warning int, critical int)  (int, error) {
+	stmt := fmt.Sprintf("SHOW SLAVE STATUS")
+	stmtStatus, err := db.Prepare(stmt)
+	myUtils.ExitIfError(err)
+	// make sure to close the statement
+	defer stmtStatus.Close()
+	rows, err := stmtStatus.Query()
+	// make sure to close the query
+	defer rows.Close()
+	if err != nil {
+		db.Close()
+		return 3, err
+	}
+	return 0, nil
 }
 
-func (db *dbMysql) ProcessStatusCheck() {
-	// TODO: need threshold
-	fmt.Printf("ProcessStatusCheck not implemented yet\n")
-	return
+func (db *dbMysql) ProcessStatusCheck(warning int, critical int)  (int, error) {
+	stmt := fmt.Sprintf("SHOW PROCESSLIST")
+	stmtStatus, err := db.Prepare(stmt)
+	myUtils.ExitIfError(err)
+	// make sure to close the statement
+	defer stmtStatus.Close()
+	rows, err := stmtStatus.Query()
+	// make sure to close the query
+	defer rows.Close()
+	if err != nil {
+		db.Close()
+		return 3, err
+	}
+	fmt.Printf("\n %s \n\n", rows)
+	return 0, nil
 }
 
-func (db *dbMysql) DropCreateCheck() {
-	// TODO: need table name
-	fmt.Printf("DropCreateCheck not implemented yet\n")
-	return
+func (db *dbMysql) DropCreateCheck(tablename string) (int, error) {
+	if err := db.CreateTable(tablename); err != nil {
+		db.Close()
+		return 2, err
+	}
+	if err := db.DropTable(tablename); err != nil {
+		db.Close()
+		return 2, err
+	}
+	return 0, nil
 }
