@@ -45,7 +45,7 @@ import (
 	myInit		"github.com/my10c/nagios-plugins-go/initialize"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 	myMySQL		"github.com/my10c/nagios-plugins-go/mysql"
-	// myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 )
 
 const (
@@ -57,30 +57,37 @@ var (
 	cfgRequired = []string{"username", "password", "database", "hostname", "port"}
 )
 
+func wrongMode() {
+	fmt.Printf("%s", myGlobal.MyInfo)
+	fmt.Printf("Wrong mode, supported mode:\n")
+	fmt.Printf("\t basic       : check select/insert/delete\n")
+	fmt.Printf("\t slavestatus : check if slave is running\n")
+	fmt.Printf("\t slavelag    : check slave lag, requires the configs: lagwarning and lagcritical.\n")
+	fmt.Printf("\t process     : check process count, requires the configs: processwarning and processcritical.\n")
+	fmt.Printf("\t dropcreate  : check drop and create tables, requires the config: tablename.\n")
+	os.Exit(3)
+}
+
 func main() {
-	cfgFile := myInit.InitArgs(cfgRequired)
+	cfgFile, checkMode := myInit.InitArgs(cfgRequired)
 	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
 	myInit.InitLog(cfgDict)
+	myUtils.SignalHandler()
 	dbCheck := myMySQL.New(cfgDict)
 	data := time.Now().String()
-	if dbCheck.CheckWrite(table, data) != nil {
-		dbCheck.Close()
-		os.Exit(2)
+	switch checkMode {
+		case "basic":
+			dbCheck.BasisCheck(table, field, data)
+		case "slavestatus":
+			dbCheck.SlaveStatusCheck()
+		case "slavelag":
+			dbCheck.SlaveLagCheck()
+		case "process":
+			dbCheck.ProcessStatusCheck()
+		case "dropcreate":
+			dbCheck.DropCreateCheck()
+		default:
+			wrongMode()
 	}
-	fmt.Printf("dbCheck.CheckWrite ok\n")
-
-	if dbCheck.CheckRead(table, data) != nil {
-		dbCheck.Close()
-		os.Exit(2)
-	}
-	fmt.Printf("dbCheck.CheckRead ok\n")
-
-	if dbCheck.CheckDelete(table, field, data) != nil {
-		dbCheck.Close()
-		os.Exit(2)
-	}
-	fmt.Printf("dbCheck.CheckDelete ok\n")
-
-	myUtils.SignalHandler()
 	os.Exit(0)
 }

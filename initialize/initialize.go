@@ -145,8 +145,9 @@ func InitLog(logSettings map[string]string) {
 }
 
 // Function to process the given args
-func InitArgs(cfg []string) string {
+func InitArgs(cfg []string) (string, string) {
 	var myConfigFile stringFlag
+	var myMode stringFlag
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", myGlobal.MyProgname)
 		flag.PrintDefaults()
@@ -154,6 +155,7 @@ func InitArgs(cfg []string) string {
 	version := flag.Bool("version", false, "Prints current version and exit.")
 	setup := flag.Bool("setup", false, "Show the setup information and exit.")
 	flag.Var(&myConfigFile, "config", "Configuration file to be used.")
+	flag.Var(&myMode, "mode", "check mode.")
 	flag.Parse()
 	if *version {
 		fmt.Printf("%s\n", myGlobal.MyVersion)
@@ -162,9 +164,12 @@ func InitArgs(cfg []string) string {
 	if *setup {
 		myHelp.SetupHelp(cfg)
 	}
+	if !myMode.set {
+		myHelp.Help(1)
+	}
 	// if not set we use the default
 	if !myConfigFile.set{
 		myConfigFile.Set(myGlobal.DefaultConfigFile)
 	}
-	return myConfigFile.value
+	return myConfigFile.value, myMode.value
 }

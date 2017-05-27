@@ -36,6 +36,7 @@
 package mysql
 
 import (
+	"fmt"
 	myUtils	"github.com/my10c/nagios-plugins-go/utils"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -64,13 +65,13 @@ func New(mysqlCfg map[string]string) *dbMysql {
 	return &dbMysql{db}
 }
 
-func (db *dbMysql) CheckWrite(table string, data string) error {
+func (db *dbMysql) CheckWrite(table string, field string, data string) error {
 	// Prepare statement for inserting data
-	stmtWrite, err := db.Prepare("INSERT INTO ? VALUES(?)")
+	stmtWrite, err := db.Prepare("INSERT INTO ? (?) VALUES(?)")
 	myUtils.ExitIfError(err)
 	// make sure to close the statement
 	defer stmtWrite.Close()
-	_, err = stmtWrite.Exec(table, data)
+	_, err = stmtWrite.Exec(table, field, data)
 	return err
 }
 
@@ -92,4 +93,46 @@ func (db *dbMysql) CheckDelete(table string, field string, data string) error {
 	defer stmtDelete.Close()
 	_, err = stmtDelete.Exec(table, field, data)
 	return err
+}
+
+func (db *dbMysql) BasisCheck(table string, field string,  data string) error{
+	if err := db.CheckWrite(table, field, data); err != nil {
+		db.Close()
+		return err
+	}
+
+	if err := db.CheckRead(table, data); err != nil {
+		db.Close()
+		return err
+	}
+
+	if err := db.CheckDelete(table, field, data); err != nil {
+		db.Close()
+		return err
+	}
+	return nil
+}
+
+func (db *dbMysql) SlaveStatusCheck() {
+	// TODO:
+	fmt.Printf("SlaveStatusCheck not implemented yet\n")
+	return
+}
+
+func (db *dbMysql) SlaveLagCheck() {
+	// TODO: need threshold
+	fmt.Printf("SlaveLagCheck not implemented yet\n")
+	return
+}
+
+func (db *dbMysql) ProcessStatusCheck() {
+	// TODO: need threshold
+	fmt.Printf("ProcessStatusCheck not implemented yet\n")
+	return
+}
+
+func (db *dbMysql) DropCreateCheck() {
+	// TODO: need table name
+	fmt.Printf("DropCreateCheck not implemented yet\n")
+	return
 }
