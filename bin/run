@@ -1,14 +1,13 @@
 #!/bin/bash
 
 if [[ -z $GOPATH ]] ; then
-	echo "GOPATH was not set!"
+	echo "$(basename $0): GOPATH was not set!"
 	exit 1
 fi
-if (( $# != 1 )) ; then
-	echo "$(basename $0) plugin-name"
+if (( $# <= 0 )) ; then
+	echo "syntax: $(basename $0) plugin-name flags"
 	exit 0
 else
-set -x
 	_plugin=$1
 	shift
 	${GOPATH}/bin/$_plugin	\
