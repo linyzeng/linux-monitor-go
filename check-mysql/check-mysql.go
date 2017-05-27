@@ -1,45 +1,86 @@
-// Copyright (c) 2016 - 2017 Poynt Co
+// Copyright (c) 2014 - 2017 badassops
 // All rights reserved.
 //
-//	Unauthorized copying of this file, via any medium is strictly prohibited
-//	* Proprietary and confidential *
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//   * Redistributions of source code must retain the above copyright
+//   notice, this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright
+//   notice, this list of conditions and the following disclaimer in the
+//   documentation and/or other materials provided with the distribution.
+//   * Neither the name of the <organization> nor the
+//   names of its contributors may be used to endorse or promote products
+//   derived from this software without specific prior written permission.
 //
-// Author		:	Luc Suryo <luc@poynt.co>
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSEcw
+// ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Version		:	0.1
 //
-// Date			:	Feb 4, 2017
+// Date			:	May 18, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	Feb 4, 2017		LIS			First release
+//	Mar 3, 2014		LIS			First release
+//	May 18, 2017	LIS			Convert from bash/python/perl to Go
 //
 // TODO:
+
 
 package main
 
 import (
 	"fmt"
 	"os"
+	"time"
+
 	myInit		"github.com/my10c/nagios-plugins-go/initialize"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	myMySQL		"github.com/my10c/nagios-plugins-go/mysql"
+	// myGlobal	"github.com/my10c/nagios-plugins-go/global"
+)
+
+const (
+	table = "MONITOR"
+	field = "timestamp"
 )
 
 var (
-	requiredCfg = []string{"username", "password", "database", "hostname", "port"}
+	cfgRequired = []string{"username", "password", "database", "hostname", "port"}
 )
 
 func main() {
-	cfgFile := myInit.InitArgs(requiredCfg)
-	// dictCfg := myInit.InitConfig(requiredCfg, cfgFile)
-	myInit.InitConfig(requiredCfg, cfgFile)
-	// for k, v := range dictCfg {
-	// 	fmt.Printf("%s %s\n", k, v)
-	// }
-	for k, v := range myGlobal.DefaultValues {
-		fmt.Printf("%s %s\n", k, v)
+	cfgFile := myInit.InitArgs(cfgRequired)
+	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
+	myInit.InitLog(cfgDict)
+	dbCheck := myMySQL.New(cfgDict)
+	data := time.Now().String()
+	if dbCheck.CheckWrite(table, data) != nil {
+		dbCheck.Close()
+		os.Exit(2)
 	}
+	fmt.Printf("dbCheck.CheckWrite ok\n")
+
+	if dbCheck.CheckRead(table, data) != nil {
+		dbCheck.Close()
+		os.Exit(2)
+	}
+	fmt.Printf("dbCheck.CheckRead ok\n")
+
+	if dbCheck.CheckDelete(table, field, data) != nil {
+		dbCheck.Close()
+		os.Exit(2)
+	}
+	fmt.Printf("dbCheck.CheckDelete ok\n")
+
 	myUtils.SignalHandler()
 	os.Exit(0)
 }

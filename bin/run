@@ -11,6 +11,6 @@ else
 	_plugin=$1
 	shift
 	${GOPATH}/bin/$_plugin	\
-		-config  ${GOPATH}/src/github.com/my10c/etc/nagios-plugins.yaml $*
+		-config  ${GOPATH}/src/github.com/my10c/nagios-plugins-go/etc/nagios-plugins.yaml $*
 	exit $?
 fi

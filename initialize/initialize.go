@@ -71,36 +71,35 @@ func (sf *stringFlag) String() string {
 
 // Function to return the yaml value, nil if error or nil if not found
 func getYamlValue(yamFile *simpleyaml.Yaml, section string, key string) (string, error) {
-	// var keyExist *simpleyaml.Yaml
+	// Check if section exist and/or key, no point to go further if it doesn't exist
 	keyExist := yamFile.GetPath(section, key)
 	if keyExist.IsFound() == false {
-		err := fmt.Errorf("Section %s and/or key %s not found", section, key)
+		err := fmt.Errorf("Section %s and/or key %s not found\n", section, key)
 		return "", err
 	}
-	// check if string
-	// if value, err := yamFile.Get(section).Get(key).String(); err == nil {
-	if value, err := yamFile.GetPath(section, key).String(); err == nil {
+	// We need to ge the value and since we do not know what it is, we check
+	// against the 3 supported type
+	// check if value is a string
+	if value, err := yamFile.Get(section).Get(key).String(); err == nil {
 		return value, err
 	}
-	// check if int
-	// if value, err := yamFile.Get(section).Get(key).Int(); err == nil {
-	if value, err := yamFile.GetPath(section, key).Int(); err == nil {
+	// check if value is a int
+	if value, err := yamFile.Get(section).Get(key).Int(); err == nil {
 		return strconv.Itoa(value), err
 	}
-	// check if boolean
-	// if value, err := yamFile.Get(section).Get(key).Bool(); err == nil {
-	if value, err := yamFile.GetPath(section, key).Bool(); err == nil {
+	// check if value is a boolean
+	if value, err := yamFile.Get(section).Get(key).Bool(); err == nil {
 		return strconv.FormatBool(value), err
 	}
-	err := fmt.Errorf("Unsupported value for section %s and key %s, suported are: string, int and bool", section, key)
+	err := fmt.Errorf("Unsupported value for section %s and key %s, suported are: string, int and bool\n", section, key)
 	return "", err
 }
 
 // Function to get the configuration
-func InitConfig(cfgList []string, argv...string) map[string]interface{} {
+func InitConfig(cfgList []string, argv...string) map[string]string {
 	// working variable
 	var missingKeys []string
-	dictCfg := make(map[string]interface{})
+	dictCfg := make(map[string]string)
 	// open given file and check that is a correct yaml file
 	cfgFile, err := ioutil.ReadFile(argv[0])
 	myUtils.ExitIfError(err)
@@ -134,11 +133,11 @@ func InitConfig(cfgList []string, argv...string) map[string]interface{} {
 // Function to initialize logging
 func InitLog(logSettings map[string]string) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	MaxSize, _		:= strconv.Atoi(logSettings["LogMaxSize"])
-	MaxBackups, _	:= strconv.Atoi(logSettings["LogMaxBackups"])
-	MaxAge, _		:= strconv.Atoi(logSettings["LogMaxAge"])
+	MaxSize, _		:= strconv.Atoi(logSettings["logmaxsize"])
+	MaxBackups, _	:= strconv.Atoi(logSettings["logmaxbackups"])
+	MaxAge, _		:= strconv.Atoi(logSettings["logmaxage"])
 	log.SetOutput(&lumberjack.Logger{
-		Filename:	logSettings["LogFile"],
+		Filename:	logSettings["logfile"],
 		MaxSize:	MaxSize,
 		MaxBackups:	MaxBackups,
 		MaxAge:		MaxAge,
