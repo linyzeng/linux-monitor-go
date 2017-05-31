@@ -51,8 +51,9 @@ check-nginx status `not started yet`	: check nginx status
 
 check-process status `not started yet`	: check if a given process is running, /prod basesd
 
-check-psql status `first release`		: check mysql health include slave/replication
+check-psql status `not started yet`		: check mysql health include slave/replication
 
+Any other that you would like to see? shoot me an email
 
 ### How to build
 
