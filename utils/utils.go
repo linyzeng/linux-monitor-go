@@ -57,6 +57,25 @@ func ExitIfError(err error) {
 	}
 }
 
+// Function to exit with the nagios standard exit code and word (WARNING, CRITICAL, UNKNOWN)
+// if error was not nil
+func ExitWithNagiosCode(exitValue int, err error) {
+	if err != nil {
+		var nagiosCode string
+		switch exitValue{
+			case 1:
+				nagiosCode = "WARNING"
+			case 2:
+				nagiosCode = "CRITICAL"
+			default:
+				nagiosCode = "UNKNOWN"
+		}
+		fmt.Fprintln(os.Stderr, nagiosCode + " Error: " + fmt.Sprint(err))
+		log.Printf("%s -< %s >-\n", nagiosCode, fmt.Sprint(err))
+		os.Exit(exitValue)
+	}
+}
+
 // Function to exit if pointer is nill
 func ExitIfNill(ptr interface{}) {
 	if ptr == nil {

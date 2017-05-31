@@ -44,6 +44,10 @@ import (
 
 const (
 	HR = "__________________________________________________"
+	OK = 0
+	WARNING = 1
+	CRITICAL = 2
+	UNKNOWN = 3
 )
 
 var (
@@ -84,6 +88,9 @@ var (
 
 	// debuging mode
 	DefaultDebug		= "false"
+
+	// result wording
+    Result = []string{ "OK", "WARNING", "CRITICAL", "UNKNOWN" }
 )
 
 func init() {

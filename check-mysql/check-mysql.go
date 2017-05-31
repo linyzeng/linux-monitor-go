@@ -34,7 +34,6 @@
 //
 // TODO:
 
-
 package main
 
 import (
@@ -104,10 +103,10 @@ func main() {
 		default:
 			wrongMode()
 	}
-	if err != nil {
-		fmt.Printf("%s %s:%s\n", err, myGlobal.MyProgname, checkMode)
+	if exitVal != myGlobal.OK {
+		fmt.Printf("%s: %s:%s %s\n", myGlobal.Result[exitVal], myGlobal.MyProgname, checkMode, err)
 		os.Exit(exitVal)
 	}
-	fmt.Printf("OK, %s:%s\n", myGlobal.MyProgname, checkMode)
+	fmt.Printf("%s, %s:%s %s\n", myGlobal.Result[exitVal], myGlobal.MyProgname, checkMode, err)
 	os.Exit(exitVal)
 }
