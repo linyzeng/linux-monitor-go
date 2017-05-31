@@ -36,6 +36,7 @@
 package global
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -48,6 +49,12 @@ const (
 	WARNING = 1
 	CRITICAL = 2
 	UNKNOWN = 3
+
+	// [KMG]Bytes units
+	B  = 1
+	KB = 1024 * B
+	MB = 1024 * KB
+	GB = 1024 * MB
 )
 
 var (
@@ -55,12 +62,11 @@ var (
 	now			= time.Now()
 	MyProgname	= path.Base(os.Args[0])
 	myAuthor	= "Luc Suryo"
-	myCopyright	= "Copyright 2017 - " + strconv.Itoa(now.Year()) + " ©badassops"
+	myCopyright	= "Copyright 2014 - " + strconv.Itoa(now.Year()) + " ©badassops"
 	myLicense	= "License BSD, http://www.freebsd.org/copyright/freebsd-license.html ♥"
 	myEmail		= "<luc@badassops.com>"
-	MyInfo		= MyProgname + " " + MyVersion + "\n" +
-					myCopyright + "\nLicense" + myLicense +
-					"\nWritten by " + myAuthor + " " + myEmail + "\n"
+	MyInfo		= fmt.Sprintf("%s %s\n%s\n%s\nWritten by %s %s\n",
+					MyProgname, MyVersion, myCopyright, myLicense, myAuthor, myEmail)
 
 	// Global variables
 	Logfile			string

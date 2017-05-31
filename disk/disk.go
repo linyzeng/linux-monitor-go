@@ -25,31 +25,53 @@
 //
 // Version		:	0.1
 //
-// Date			:
+// Date			:	May 30, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
 //	Mar 3, 2014		LIS			First release
-//					LIS			Convert from bash/python/perl to Go
+//	May 30, 2017	LIS			Convert from bash/python/perl to Go
 //
-// TODO:
 
-package main
+package disk
 
 import (
-	//"fmt"
-	"os"
-	//"time"
-
-	//myInit		"github.com/my10c/nagios-plugins-go/initialize"
+	"fmt"
+	"io/ioutil"
+//	"regexp"
+	"strings"
+//	"strconv"
+//	"syscall"
+//
+	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	myDisk		"github.com/my10c/nagios-plugins-go/disk"
-	//myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	//myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
+//	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
 )
 
-func main() {
-	myUtils.IsLinuxSystem()
-	myDisk.New()
-	os.Exit(0)
+const (
+	PROCMOUNT = "/proc/mounts"
+)
+
+var (
+	// valid partiton and disk we support
+	parRegex = `^(/dev/)(xvd|sd|disk|mapper)`
+	symRegex = `^(/dev/)(disk|mapper)`
+)
+
+type LnxDisk struct {
+	totalSpace uint64
+	totalUse uint64
+	totalFree uint64
+	mountPoint string
+}
+
+func New() *LnxDisk {
+	contents, err := ioutil.ReadFile(PROCMOUNT)
+	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	// get all lines and walk one at the time
+	lines := strings.Split(string(contents), "\n")
+	for _, line := range(lines) {
+		fmt.Printf("- %s - ", strings.Fields(line))
+	}
+	return nil
 }

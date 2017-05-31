@@ -69,7 +69,7 @@ func Help(exitVal int) {
 	optionList := "<--config config file> <--check mode> <--setup> <--version> <--help>"
 	fmt.Printf("\nUsage : %s\n\tflags: %s\n", myGlobal.MyProgname, optionList)
 	fmt.Printf("\t*config: the configuration file to use, should be full path, use --setup for more information.\n")
-	fmt.Printf("\t*check: mode, this is defined per check.\n")
+	fmt.Printf("\t*check: mode, this is defined per check, use 'mode help' to see valid modes.\n")
 	fmt.Printf("\tsetup: show the setup guide.\n")
 	fmt.Printf("\tversion: print %s version.\n", myGlobal.MyProgname)
 	fmt.Printf("\thelp: short version of this help page.\n")

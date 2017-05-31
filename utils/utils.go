@@ -43,9 +43,10 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"runtime"
 	"strconv"
 
-	myGolbal "github.com/my10c/nagios-plugins-go/global"
+	myGlobal "github.com/my10c/nagios-plugins-go/global"
 )
 
 // Function to exit if an error occured
@@ -95,7 +96,7 @@ func StdOutAndLog(message string) {
 // Function to check if the user that runs the app is root
 func IsRoot() {
 	if os.Geteuid() != 0 {
-		StdOutAndLog(fmt.Sprintf("%s must be run as root.", myGolbal.MyProgname))
+		StdOutAndLog(fmt.Sprintf("%s must be run as root.", myGlobal.MyProgname))
 		os.Exit(1)
 	}
 }
@@ -158,6 +159,24 @@ func WriteDebug(debug string, messsage string) {
 	}
 	if debugMode == true {
 		log.Printf("Debug -< %s >-\n", messsage)
+	}
+	return
+}
+
+// Function to check if the system is the given OS
+func IsOS(osName string) (string, bool) {
+	if runtime.GOOS == osName {
+		return runtime.GOOS, true
+	}
+	return runtime.GOOS, false
+}
+
+// Function to check if we are on a Linux system
+func IsLinuxSystem() {
+	if osName, ok := IsOS("linux"); !ok {
+		fmt.Printf("%s", myGlobal.MyInfo)
+		fmt.Printf("OS (%s) not supported, this check can only be run on a Linux system.\n", osName)
+		os.Exit(1)
 	}
 	return
 }
