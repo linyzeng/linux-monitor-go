@@ -60,6 +60,16 @@ func SetupHelp(cfg []string) {
 	for defaultKey, defaultValue := range myGlobal.DefaultValues {
 		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
 	}
+	fmt.Printf("\n\t# Optional for pagerduty support, if any of these keys are empty then pagerduty is not used.\n")
+	fmt.Printf("pagerduty:\n")
+	for defaultKey, defaultValue := range myGlobal.DefaultPD {
+		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
+	}
+	fmt.Printf("\n\t# Optional for slack support, if any of these keys are empty then pagerduty is not used.\n")
+	fmt.Printf("slack:\n")
+	for defaultKey, defaultValue := range myGlobal.DefaultSlack {
+		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
+	}
 	os.Exit(0)
 }
 

@@ -180,3 +180,32 @@ func IsLinuxSystem() {
 	}
 	return
 }
+
+// Function to show a map entry, key and value and displayed in yaml
+func ShowMap(cfgDict map[string]string) {
+	if cfgDict == nil {
+		// display the defaults values
+		fmt.Printf("common:\n")
+		for mapKey, mapValue := range myGlobal.DefaultValues {
+			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
+		}
+		// display the pagerduty values
+		fmt.Printf("pagerduty:\n")
+		for mapKey, mapValue := range myGlobal.DefaultPD {
+			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
+		}
+		// display the slack values
+		fmt.Printf("pagerduty:\n")
+		for mapKey, mapValue := range myGlobal.DefaultSlack {
+			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
+		}
+	}
+	if cfgDict != nil {
+		fmt.Printf("%s:\n", myGlobal.MyProgname)
+		for mapKey, mapValue := range cfgDict {
+			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
+		}
+		// display the pagerduty values
+	}
+	return
+}

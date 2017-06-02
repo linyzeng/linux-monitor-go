@@ -67,6 +67,7 @@ func wrongMode() {
 	fmt.Printf("\t slavelag    : check slave lag, requires the configs: lagwarning and lagcritical.\n")
 	fmt.Printf("\t process     : check process count, requires the configs: processwarning and processcritical.\n")
 	fmt.Printf("\t dropcreate  : check drop and create tables, requires the config: tablename.\n")
+	fmt.Printf("\t showconfig  : show the current configuration and then exit.\n")
 	os.Exit(3)
 }
 
@@ -100,6 +101,10 @@ func main() {
 			exitVal, err = dbCheck.ProcessStatusCheck(warning, critical)
 		case "dropcreate":
 			exitVal, err = dbCheck.DropCreateCheck(cfgDict["tablename"])
+		case "showconfig":
+			myUtils.ShowMap(cfgDict)
+			myUtils.ShowMap(nil)
+			os.Exit(0)
 		default:
 			wrongMode()
 	}

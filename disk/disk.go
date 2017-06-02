@@ -36,10 +36,13 @@
 package disk
 
 import (
-	"fmt"
+//	"fmt"
 	"io/ioutil"
-//	"regexp"
+//	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
+//	"syscall"
 //	"strconv"
 //	"syscall"
 //
@@ -65,13 +68,33 @@ type LnxDisk struct {
 	mountPoint string
 }
 
-func New() *LnxDisk {
+func New() map[string]string {
 	contents, err := ioutil.ReadFile(PROCMOUNT)
 	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	// prep the regex, we ignore the errors
+	expDisk, _ :=  regexp.Compile(parRegex)
+	expLogics, _ := regexp.Compile(symRegex)
+	// create the return map
+	diskInfo := make(map[string]string)
 	// get all lines and walk one at the time
 	lines := strings.Split(string(contents), "\n")
 	for _, line := range(lines) {
-		fmt.Printf("- %s - ", strings.Fields(line))
+		if line != "" {
+			currPar := strings.Fields(line)[0]
+			currMountPoint := strings.Fields(line)[1]
+			// we only want those matching parRegex
+			match := expDisk.MatchString(currPar)
+			if match {
+				// check is we have a possible symlink or fullpath
+				match = expLogics.MatchString(currPar)
+				if match {
+					// currPar, _ := os.Readlink(currPar)
+					currPar, _ = filepath.EvalSymlinks(currPar)
+				}
+				// get the disk/partion info
+				diskInfo[currMountPoint] = currPar
+			}
+		}
 	}
-	return nil
+	return diskInfo
 }

@@ -23,14 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Version		:	0.2
+// Version		:	0.3
 //
-// Date			:	May 18, 2017
+// Date			:	June 1, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
 //	Mar 3, 2014		LIS			First release
 //	May 18, 2017	LIS			Convert from bash/python/perl to Go
+//	June 1, 2017	LIS			Added defaults for syslog, pagerduty, slack and email
 //
 
 package global
@@ -83,17 +84,33 @@ var (
 
 	// defaults
 	DefaultConfDir		= "/etc/nagios-plugins-go"
-	DefaultLogsDir		= "/var/log/monitor"
-	DefaultConfigFile	= DefaultConfDir + MyProgname + ".conf"
+	DefaultLogsDir		= "/var/log/nagios-plugins-go"
+	DefaultConfigFile	= fmt.Sprintf("%s/nagios-plugins-go.yaml", DefaultConfDir)
 
 	// for logging
-	DefaultLogFile			= DefaultLogsDir + "/" + MyProgname + ".log"
+	DefaultLogFile			= fmt.Sprintf("%s/%s.log", DefaultLogsDir, MyProgname)
 	DefaultLogMaxSize		= 128	// megabytes
 	DefaultLogMaxBackups	= 3		// 3 files
 	DefaultLogMaxAge		= 10	// days
 
 	// debuging mode
 	DefaultDebug		= "false"
+
+	// email
+	DefaultEmailTo		= ""
+
+	// syslog
+	DefaultSyslogTag = fmt.Sprintf("[%s]", MyProgname)
+
+	// pagerdutry
+	DefaultPD				map[string]string
+	DefaultPDServiceKey		= ""
+	DefaultPDServiceName	= ""
+
+	// slack
+	DefaultSlack			map[string]string
+	DefaultSlackServiceKey	= ""
+	DefaultSlackChannel		= ""
 
 	// result wording
     Result = []string{ "OK", "WARNING", "CRITICAL", "UNKNOWN" }
@@ -102,12 +119,20 @@ var (
 func init() {
 	// setup the default value, these are hardcoded.
 	DefaultValues = make(map[string]string)
-	DefaultValues["debug"]			=	DefaultDebug
-	DefaultValues["configdir"]		=	DefaultConfDir
-	DefaultValues["logdir"]			=	DefaultLogsDir
-	DefaultValues["configfile"]		=	DefaultConfigFile
-	DefaultValues["logfile"]		=	DefaultLogFile
-	DefaultValues["logmaxsize"]		=	strconv.Itoa(DefaultLogMaxSize)
-	DefaultValues["logmaxbackups"]	=	strconv.Itoa(DefaultLogMaxBackups)
-	DefaultValues["logmaxage"]		=	strconv.Itoa(DefaultLogMaxAge)
+	DefaultValues["debug"]				=	DefaultDebug
+	DefaultValues["logdir"]				=	DefaultLogsDir
+	DefaultValues["logfile"]			=	DefaultLogFile
+	DefaultValues["logmaxsize"]			=	strconv.Itoa(DefaultLogMaxSize)
+	DefaultValues["logmaxbackups"]		=	strconv.Itoa(DefaultLogMaxBackups)
+	DefaultValues["logmaxage"]			=	strconv.Itoa(DefaultLogMaxAge)
+	DefaultValues["emailto"]			=	DefaultEmailTo
+	DefaultValues["syslogtag"]			=	DefaultSyslogTag
+	// for pagerduty
+	DefaultPD = make(map[string]string)
+	DefaultPD["pdservicekey"]		=	DefaultPDServiceKey
+	DefaultPD["pdservicename"]		=	DefaultPDServiceName
+	// for slack
+	DefaultSlack = make(map[string]string)
+	DefaultSlack["slackservicekey"]	=	DefaultSlackServiceKey
+	DefaultSlack["slackchannel"]		=	DefaultSlackChannel
 }

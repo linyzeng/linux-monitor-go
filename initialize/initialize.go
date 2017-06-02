@@ -112,6 +112,20 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 			myGlobal.DefaultValues[defaultKey] = newValue
 		}
 	}
+	// for Pagerduty
+	for defaultPD, _ := range myGlobal.DefaultPD {
+		if newValue, err := getYamlValue(yamlFile, "pagerduty", defaultPD); err == nil {
+			// replace the default value
+			myGlobal.DefaultPD[defaultPD] = newValue
+		}
+	}
+	// for Slack
+	for defaultSlack, _ := range myGlobal.DefaultSlack {
+		if newValue, err := getYamlValue(yamlFile, "slack", defaultSlack); err == nil {
+			// replace the default value
+			myGlobal.DefaultPD[defaultSlack] = newValue
+		}
+	}
 	// set the config value
 	for cnt := range cfgList {
 		keyName := cfgList[cnt]

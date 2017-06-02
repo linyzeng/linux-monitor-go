@@ -25,31 +25,45 @@
 //
 // Version		:	0.1
 //
-// Date			:
+// Date			:	June 1, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	Mar 3, 2014		LIS			First release
-//					LIS			Convert from bash/python/perl to Go
+//	June 1, 2014		LIS			First release
 //
-// TODO:
 
-package main
+package mysql
 
 import (
+	//"encoding/json"
 	"fmt"
-	"os"
-	//"time"
+	//"strconv"
 
-	//myInit		"github.com/my10c/nagios-plugins-go/initialize"
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	myDisk		"github.com/my10c/nagios-plugins-go/disk"
 	//myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	//myUtils		"github.com/my10c/nagios-plugins-go/utils"
 	//myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
+
+	PD			"github.com/PagerDuty/go-pagerduty"
 )
 
-func main() {
-	myUtils.IsLinuxSystem()
-	fmt.Println(myDisk.New())
-	os.Exit(0)
+type PagerDuty struct {
+	ServiceKey string
+	LoggerTag string
+	ServiceName string
+	PostUrl string
+	Event PD.Event
+}
+
+func New(PDCfg map[string]string) *PagerDuty {
+	:wq!
+	return nil
+}
+
+func (pd *PagerDuty) TriggerIncident(tag string, description string) error {
+
+	// create the header for post
+	headers := fmt.Sprintf("{'Authorization': 'Token token={0}'.format(%s), 'Content-type': 'application/json', }", pd.ServiceName)
+
+	_, error := PD.CreateEvent(pd.Event)
+	return error
 }
