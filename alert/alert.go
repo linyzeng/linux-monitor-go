@@ -99,7 +99,7 @@ func alertSyslog(message string) error {
 		return err
 	}
 	// create a syslog handler
-	syslogHandler, err := syslog.New(syslog.Priority(priority|facility), tag)
+	syslogHandler, err := syslog.New(syslog.Priority(facility|priority), tag)
 	if err != nil {
 		return err
 	}
