@@ -112,6 +112,13 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 			myGlobal.DefaultValues[defaultKey] = newValue
 		}
 	}
+	// for Syslog
+	for defaultSyslog, _ := range myGlobal.DefaultSyslog {
+		if newValue, err := getYamlValue(yamlFile, "syslog", defaultSyslog); err == nil {
+			// replace the default value
+			myGlobal.DefaultSyslog[defaultSyslog] = newValue
+		}
+	}
 	// for Pagerduty
 	for defaultPD, _ := range myGlobal.DefaultPD {
 		if newValue, err := getYamlValue(yamlFile, "pagerduty", defaultPD); err == nil {

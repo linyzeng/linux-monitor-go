@@ -49,6 +49,40 @@ import (
 	myGlobal "github.com/my10c/nagios-plugins-go/global"
 )
 
+var (
+	// syslog need to this so configuration can use string instead of int
+	syslogPriority = map[string]int{
+		"LOG_EMERG"		: 0,
+		"LOG_ALERT"		: 1,
+		"LOG_CRIT"		: 2,
+		"LOG_ERR"		: 3,
+		"LOG_WARNING"	: 4,
+		"LOG_NOTICE"	: 5,
+		"LOG_INFO"		: 6,
+		"LOG_DEBUG"		: 7,
+
+	}
+	syslogFacility =  map[string]int{
+		"LOG_MAIL"		: 0,
+		"LOG_DAEMON"	: 1,
+		"LOG_AUTH"		: 2,
+		"LOG_SYSLOG"	: 3,
+		"LOG_LPR"		: 4,
+		"LOG_NEWS"		: 5,
+		"LOG_UUCP"		: 6,
+		"LOG_CRON"		: 7,
+		"LOG_AUTHPRIV"	: 8,
+		"LOG_FTP"		: 9,
+		"LOG_LOCAL0"	: 10,
+		"LOG_LOCAL1"	: 11,
+		"LOG_LOCAL2"	: 12,
+		"LOG_LOCAL3"	: 13,
+		"LOG_LOCAL4"	: 14,
+		"LOG_LOCAL5"	: 15,
+		"LOG_LOCAL6"	: 16,
+		"LOG_LOCAL7"	: 18,
+	}
+)
 // Function to exit if an error occured
 func ExitIfError(err error) {
 	if err != nil {
@@ -190,6 +224,11 @@ func ShowMap(cfgDict map[string]string) {
 			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
 		}
 		// display the pagerduty values
+		fmt.Printf("syslog:\n")
+		for mapKey, mapValue := range myGlobal.DefaultSyslog {
+			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
+		}
+		// display the pagerduty values
 		fmt.Printf("pagerduty:\n")
 		for mapKey, mapValue := range myGlobal.DefaultPD {
 			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
@@ -208,4 +247,26 @@ func ShowMap(cfgDict map[string]string) {
 		// display the pagerduty values
 	}
 	return
+}
+
+// Function to map string to int for syslog
+func GetSyslog(priority string, facility string) (int, int, error) {
+	var priorityValue int
+	var facilityValue int
+	var err error = nil
+	if mapVal, ok := syslogPriority[priority]; ok {
+		priorityValue = mapVal
+	} else {
+		err = fmt.Errorf("Given Syslog Priority is incorrect: %s\n", priority)
+	}
+	if mapVal, ok := syslogFacility[facility]; ok {
+		facilityValue = mapVal
+	} else {
+		if err == nil {
+			err = fmt.Errorf("Given Syslog Facility is incorrect: %s\n", facility)
+		}  else {
+			err = fmt.Errorf("%s, Given Syslog Facility is incorrect: %s\n", err.Error(), facility)
+		}
+	}
+	return priorityValue, facilityValue, err
 }

@@ -55,9 +55,18 @@ func SetupHelp(cfg []string) {
 		fmt.Printf("  %s:\n", cfg[cnt])
 	}
 	fmt.Printf("\t# Optional add these values in the common section.\n")
-	fmt.Printf("\t# Values shown are the default values.\n")
+	fmt.Printf("\t# Values shown are the default values. If emailto is empty then no email will be sent.\n")
+	fmt.Printf("\t# tagfile and tagkeyname are use to get teh tag info by loking for the key tagkeyname in the given\n")
+	fmt.Printf("\t#	file tagfile, the format need to be just 'keyname value' too!\n")
 	fmt.Printf("common:\n")
 	for defaultKey, defaultValue := range myGlobal.DefaultValues {
+		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
+	}
+	fmt.Printf("\n\t# Syslog support, to disable set tag value to off.\n")
+	fmt.Printf("\t# Valid Priority: LOG_EMERG, LOG_ALERT LOG_CRIT LOG_ERR LOG_WARNING LOG_NOTICE LOG_INFO LOG_DEBUG\n");
+	fmt.Printf("\t# Valid Facility: LOG_MAIL LOG_DAEMON LOG_AUTH LOG_SYSLOG\n\t\tLOG_LPR LOG_NEWS LOG_UUCP LOG_CRON LOG_AUTHPRIV LOG_FTP LOG_LOCAL[0-7]\n")
+	fmt.Printf("syslog:\n")
+	for defaultKey, defaultValue := range myGlobal.DefaultSyslog {
 		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
 	}
 	fmt.Printf("\n\t# Optional for pagerduty support, if any of these keys are empty then pagerduty is not used.\n")

@@ -46,6 +46,7 @@ import (
 	myMySQL		"github.com/my10c/nagios-plugins-go/mysql"
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
+	myAlert		"github.com/my10c/nagios-plugins-go/alert"
 )
 
 const (
@@ -110,6 +111,8 @@ func main() {
 	}
 	if exitVal != myGlobal.OK {
 		fmt.Printf("%s: %s:%s %s\n", myGlobal.Result[exitVal], myGlobal.MyProgname, checkMode, err)
+		messsage := fmt.Sprintf("%s: running mode %s\n%s\n", myGlobal.Result[exitVal], checkMode, err)
+		myAlert.SendAlert(messsage)
 		os.Exit(exitVal)
 	}
 	fmt.Printf("%s, %s:%s %s\n", myGlobal.Result[exitVal], myGlobal.MyProgname, checkMode, err)

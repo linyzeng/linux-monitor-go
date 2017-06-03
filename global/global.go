@@ -56,6 +56,7 @@ const (
 	KB = 1024 * B
 	MB = 1024 * KB
 	GB = 1024 * MB
+
 )
 
 var (
@@ -100,7 +101,10 @@ var (
 	DefaultEmailTo		= ""
 
 	// syslog
-	DefaultSyslogTag = fmt.Sprintf("[%s]", MyProgname)
+	DefaultSyslog			map[string]string
+	DefaultSyslogTag		= fmt.Sprintf("[%s]", MyProgname)
+	DefaultSyslogPriority	= "LOG_INFO"
+	DefaultSyslogFacility	= "LOG_SYSLOG"
 
 	// pagerdutry
 	DefaultPD				map[string]string
@@ -126,7 +130,14 @@ func init() {
 	DefaultValues["logmaxbackups"]		=	strconv.Itoa(DefaultLogMaxBackups)
 	DefaultValues["logmaxage"]			=	strconv.Itoa(DefaultLogMaxAge)
 	DefaultValues["emailto"]			=	DefaultEmailTo
-	DefaultValues["syslogtag"]			=	DefaultSyslogTag
+	//these are for getting a instance/system tag
+	DefaultValues["tagfile"]			=	 ""
+	DefaultValues["tagkeyname"]			=	""
+	// for syslog
+	DefaultSyslog = make(map[string]string)
+	DefaultSyslog["syslogtag"]			=	DefaultSyslogTag
+	DefaultSyslog["syslogpriority"]		=	DefaultSyslogPriority
+	DefaultSyslog["syslogfacility"]		=	DefaultSyslogFacility
 	// for pagerduty
 	DefaultPD = make(map[string]string)
 	DefaultPD["pdservicekey"]		=	DefaultPDServiceKey
