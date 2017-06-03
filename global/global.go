@@ -94,12 +94,20 @@ var (
 	DefaultLogMaxBackups	= 3		// 3 files
 	DefaultLogMaxAge		= 10	// days
 
-	// debuging mode
+	// alert, logging and debuging mode
+	DefaultNoAlert		= "false"
+	DefaultNoLog		= "false"
 	DefaultDebug		= "false"
 
 	// email
-	DefaultEmailFrom	= ""
-	DefaultEmailTo		= ""
+	DefaultEmailFrom		= ""
+	DefaultEmailFromName	= ""
+	DefaultEmailTo			= ""
+	DefaultEmailToName		= ""
+	DefaultEmailUser		= ""
+	DefaultEmailpassword	= ""
+	DefaultEmailhost		= "localhost"
+	DefaultEmailHostPort	= 25
 
 	// syslog
 	DefaultSyslog			map[string]string
@@ -123,7 +131,10 @@ var (
 
 func init() {
 	// setup the default value, these are hardcoded.
+	// the common section
 	DefaultValues = make(map[string]string)
+	DefaultValues["noalert"]			=	DefaultNoAlert
+	DefaultValues["nolog"]				=	DefaultNoLog
 	DefaultValues["debug"]				=	DefaultDebug
 	DefaultValues["logdir"]				=	DefaultLogsDir
 	DefaultValues["logfile"]			=	DefaultLogFile
@@ -131,9 +142,15 @@ func init() {
 	DefaultValues["logmaxbackups"]		=	strconv.Itoa(DefaultLogMaxBackups)
 	DefaultValues["logmaxage"]			=	strconv.Itoa(DefaultLogMaxAge)
 	DefaultValues["emailfrom"]			=	DefaultEmailFrom
+	DefaultValues["emailfromname"]		=	DefaultEmailFromName
 	DefaultValues["emailto"]			=	DefaultEmailTo
-	//these are for getting a instance/system tag
-	DefaultValues["tagfile"]			=	 ""
+	DefaultValues["emailtoname"]		=	DefaultEmailToName
+	DefaultValues["emailuser"]			=	DefaultEmailUser
+	DefaultValues["emailpass"]			=	DefaultEmailpassword
+	DefaultValues["emailhost"]			=	DefaultEmailhost
+	DefaultValues["emailhostport"]		=	strconv.Itoa(DefaultEmailHostPort)
+	// these are for getting a instance/system tag
+	DefaultValues["tagfile"]			=	""
 	DefaultValues["tagkeyname"]			=	""
 	// for syslog
 	DefaultSyslog = make(map[string]string)

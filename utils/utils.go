@@ -234,7 +234,7 @@ func ShowMap(cfgDict map[string]string) {
 			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
 		}
 		// display the slack values
-		fmt.Printf("pagerduty:\n")
+		fmt.Printf("slack:\n")
 		for mapKey, mapValue := range myGlobal.DefaultSlack {
 			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
 		}
@@ -265,7 +265,7 @@ func GetSyslog(priority string, facility string) (int, int, error) {
 		if err == nil {
 			err = fmt.Errorf("Given Syslog Facility is incorrect: %s\n", facility)
 		}  else {
-			err = fmt.Errorf("%s, Given Syslog Facility is incorrect: %s\n", err.Error(), facility)
+			err = fmt.Errorf("%sGiven Syslog Facility is incorrect: %s\n", err.Error(), facility)
 		}
 	}
 	return priorityValue, facilityValue, err

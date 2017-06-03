@@ -110,9 +110,12 @@ func main() {
 			wrongMode()
 	}
 	if exitVal != myGlobal.OK {
-		fmt.Printf("%s: %s:%s %s\n", myGlobal.Result[exitVal], myGlobal.MyProgname, checkMode, err)
-		messsage := fmt.Sprintf("%s: running mode %s\n%s\n", myGlobal.Result[exitVal], checkMode, err)
-		myAlert.SendAlert(messsage)
+		if myGlobal.DefaultValues["noalert"]  == "false" {
+			myAlert.SendAlert(exitVal, checkMode, err.Error())
+		} else {
+			fmt.Printf("%s: %s\nCheck running mode: %s\nError: %s\n",
+				myGlobal.MyProgname, myGlobal.Result[exitVal], checkMode, err.Error())
+		}
 		os.Exit(exitVal)
 	}
 	fmt.Printf("%s, %s:%s %s\n", myGlobal.Result[exitVal], myGlobal.MyProgname, checkMode, err)

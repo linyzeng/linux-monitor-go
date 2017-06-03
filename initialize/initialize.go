@@ -130,7 +130,7 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 	for defaultSlack, _ := range myGlobal.DefaultSlack {
 		if newValue, err := getYamlValue(yamlFile, "slack", defaultSlack); err == nil {
 			// replace the default value
-			myGlobal.DefaultPD[defaultSlack] = newValue
+			myGlobal.DefaultSlack[defaultSlack] = newValue
 		}
 	}
 	// set the config value
@@ -175,6 +175,8 @@ func InitArgs(cfg []string) (string, string) {
 	}
 	version := flag.Bool("version", false, "Prints current version and exit.")
 	setup := flag.Bool("setup", false, "Show the setup information and exit.")
+	noalert := flag.Bool("noalert", false, "Send no alert.")
+	nolog := flag.Bool("nolog", false, "Do not log result.")
 	flag.Var(&myConfigFile, "config", "Configuration file to be used.")
 	flag.Var(&myMode, "mode", "check mode.")
 	flag.Parse()
@@ -192,5 +194,8 @@ func InitArgs(cfg []string) (string, string) {
 	if !myConfigFile.set{
 		myConfigFile.Set(myGlobal.DefaultConfigFile)
 	}
+	// set the noalert and nolog
+	myGlobal.DefaultValues["noalert"] = strconv.FormatBool(*noalert)
+	myGlobal.DefaultValues["nolog"] = strconv.FormatBool(*nolog)
 	return myConfigFile.value, myMode.value
 }

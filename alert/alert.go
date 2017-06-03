@@ -31,40 +31,60 @@
 // 	Date:			Author:		Info:
 //	June 2, 2017	LIS			First release
 //
+// TODO: process error
 
 package alerts
 
 import (
 	"fmt"
 	"log/syslog"
+	"net/mail"
 	"net/smtp"
+	"os"
 
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
+	mytag		"github.com/my10c/nagios-plugins-go/tag"
 )
 
 // Function to sent alerts
-func SendAlert(message string) error {
+func SendAlert(exitVal int, checkMode string, checkErr string) error {
+	var hostName string
+	var message string
 	var err error = nil
-	// Syslog : only if syslog tag was not set to off
-	if myGlobal.DefaultSyslog["syslogtag"]  != "off" {
+	// create the full message and subject
+	errWord := myGlobal.Result[exitVal]
+	hostName, hostOK := os.Hostname()
+	if hostOK != nil {
+		hostName = "Unable to get hostname"
+	}
+	tagInfo, tagOK := mytag.GetTagInfo()
+	if tagOK != nil {
+		message = fmt.Sprintf("TAG: no tag found\nHost: %s\n%s: %s\nCheck running mode: %s\nError: %s\n",
+				hostName, myGlobal.MyProgname, errWord, checkMode, checkErr)
+	} else {
+		message = fmt.Sprintf("TAG: %s\nHost: %s\n%s: %s\nCheck running mode: %s\nError: %s\n",
+			tagInfo, hostName, myGlobal.MyProgname, errWord, checkMode, checkErr)
+	}
+	errSubject := fmt.Sprintf("%s : MONITOR ALERT : %s : %s ", errWord, hostName, myGlobal.MyProgname)
+	// Syslog : only if syslog tag was not set to of
+	if myGlobal.DefaultSyslog["syslogtag"] != "off" {
 		alertSyslog(message)
-		//fmt.Printf("Syslog %s\n", message)
 	}
 	// Email : only if emailto is not empty
 	if len(myGlobal.DefaultValues["emailto"]) > 0 {
-		fmt.Printf("Email %s\n", message)
+		alertEmail(message, errSubject)
 	}
 	// Pagerduty : only if key and service-name are not empty
-	if len(myGlobal.DefaultPD["pdservicekey"]) > 0 &&
-	   len(myGlobal.DefaultPD["pdservicename"]) > 0 {
-		fmt.Printf("PD %s\n", message)
-	}
+	// if len(myGlobal.DefaultPD["pdservicekey"]) > 0 &&
+	//    len(myGlobal.DefaultPD["pdservicename"]) > 0 {
+	// 	fmt.Printf("\nPD %s\n\n", message)
+	// }
 	// Slack : only if key and channel are not empty
-	if len(myGlobal.DefaultSlack["slackservicekey"]) > 0 &&
-	   len(myGlobal.DefaultSlack["slackchannel"]) > 0 {
-		fmt.Printf("Slack %s\n", message)
-	}
+	// if len(myGlobal.DefaultSlack["slackservicekey"]) > 0 &&
+	//    len(myGlobal.DefaultSlack["slackchannel"]) > 0 {
+	// 	fmt.Printf("\nSlack %s\n\n", message)
+	// }
 	return err
 }
 
@@ -88,5 +108,22 @@ func alertSyslog(message string) error {
 }
 
 // Function to send an alert email
-func alertEmail(message string) error {
+func alertEmail(message string, subject string) error {
+	// if authEmail - empty then no authentication is required
+	// for now only support PlainAuth
+	authEmail := smtp.PlainAuth("",
+			myGlobal.DefaultValues["emailuser"],
+			myGlobal.DefaultValues["emailpass"],
+			myGlobal.DefaultValues["emailhost"],
+	)
+	// build the email component
+	emailTo := mail.Address{myGlobal.DefaultValues["emailtoname"], myGlobal.DefaultValues["emailto"]}
+	emailFrom := mail.Address{myGlobal.DefaultValues["emailfromname"], myGlobal.DefaultValues["emailfrom"]}
+	emailSubject := subject
+	emailHost := fmt.Sprintf("%s:%s", myGlobal.DefaultValues["emailhost"], myGlobal.DefaultValues["emailhostport"])
+	fromAndBody := fmt.Sprintf("To: %s\r\nSubject: %s\r\n\r\n%s\r\n",
+			emailTo.String(), emailSubject, message)
+	// send the email
+	err := smtp.SendMail(emailHost, authEmail, emailFrom.String(), []string{emailTo.String()}, []byte(fromAndBody))
+	return err
 }
