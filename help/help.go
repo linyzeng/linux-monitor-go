@@ -39,7 +39,8 @@ import (
 	"fmt"
 	"os"
 
-	myGlobal "github.com/my10c/nagios-plugins-go/global"
+	myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 )
 
 // Function to show how to setup the aws credentials and the simple-aws-lb config
@@ -56,15 +57,13 @@ func SetupHelp(cfg []string) {
 	}
 	fmt.Printf("\t# Optional add these values in the common section.\n")
 	fmt.Printf("\t# Values shown are the default values. If either emailfrom or emailto is empty then no email will be sent.\n")
-	fmt.Printf("\t# tagfile and tagkeyname are use to get teh tag info by loking for the key tagkeyname in the given\n")
-	fmt.Printf("\t#	file tagfile, the format need to be just 'keyname value' too!\n")
+	fmt.Printf("\t# tagfile and tagkeyname are use to get the tag info by looking for the key tagkeyname in the\n")
+	fmt.Printf("\t# configured file tagfile, the format need to be just 'keyname value' nothing fancy!\n")
 	fmt.Printf("common:\n")
 	for defaultKey, defaultValue := range myGlobal.DefaultValues {
 		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
 	}
 	fmt.Printf("\n\t# Syslog support, to disable set tag value to off.\n")
-	fmt.Printf("\t# Valid Priority: LOG_EMERG, LOG_ALERT LOG_CRIT LOG_ERR LOG_WARNING LOG_NOTICE LOG_INFO LOG_DEBUG\n");
-	fmt.Printf("\t# Valid Facility: LOG_MAIL LOG_DAEMON LOG_AUTH LOG_SYSLOG\n\t\tLOG_LPR LOG_NEWS LOG_UUCP LOG_CRON LOG_AUTHPRIV LOG_FTP LOG_LOCAL[0-7]\n")
 	fmt.Printf("syslog:\n")
 	for defaultKey, defaultValue := range myGlobal.DefaultSyslog {
 		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
@@ -79,6 +78,24 @@ func SetupHelp(cfg []string) {
 	for defaultKey, defaultValue := range myGlobal.DefaultSlack {
 		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
 	}
+	fmt.Printf("\n\nNOTE\n")
+	fmt.Printf("\t* Any key that has any of these charaters: '#[]()*' in their value must be double quoted!\n") 
+	fmt.Printf("\t* Syslog Valid Priority: ")
+	for keyPriority, _ := range myUtils.SyslogPriority {
+		fmt.Printf("%s ", keyPriority)
+	}
+	cnt := 0
+	fmt.Printf("\n\t* Syslog Valid Facility: ")
+	for keyFacility, _ := range myUtils.SyslogFacility {
+		if cnt > 5 {
+			fmt.Printf("\n\t\t%s ", keyFacility)
+			cnt = 0
+		} else {
+			fmt.Printf("%s ", keyFacility)
+			cnt += 1
+		}
+	}
+	fmt.Printf("\n")
 	os.Exit(0)
 }
 

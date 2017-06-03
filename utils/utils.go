@@ -51,7 +51,7 @@ import (
 
 var (
 	// syslog need to this so configuration can use string instead of int
-	syslogPriority = map[string]int{
+	SyslogPriority = map[string]int{
 		"LOG_EMERG"		: 0,
 		"LOG_ALERT"		: 1,
 		"LOG_CRIT"		: 2,
@@ -62,7 +62,7 @@ var (
 		"LOG_DEBUG"		: 7,
 
 	}
-	syslogFacility =  map[string]int{
+	SyslogFacility =  map[string]int{
 		"LOG_MAIL"		: 0,
 		"LOG_DAEMON"	: 1,
 		"LOG_AUTH"		: 2,
@@ -254,12 +254,12 @@ func GetSyslog(priority string, facility string) (int, int, error) {
 	var priorityValue int
 	var facilityValue int
 	var err error = nil
-	if mapVal, ok := syslogPriority[priority]; ok {
+	if mapVal, ok := SyslogPriority[priority]; ok {
 		priorityValue = mapVal
 	} else {
 		err = fmt.Errorf("Given Syslog Priority is incorrect: %s\n", priority)
 	}
-	if mapVal, ok := syslogFacility[facility]; ok {
+	if mapVal, ok := SyslogFacility[facility]; ok {
 		facilityValue = mapVal
 	} else {
 		if err == nil {
