@@ -41,10 +41,13 @@ import (
 	"net/mail"
 	"net/smtp"
 	"os"
+	"strings"
 
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 	mytag		"github.com/my10c/nagios-plugins-go/tag"
+
+	"github.com/nlopes/slack"
 )
 
 // Function to sent alerts
@@ -58,13 +61,14 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 	if hostOK != nil {
 		hostName = "Unable to get hostname"
 	}
+	hostName = strings.TrimSpace(hostName)
 	tagInfo, tagOK := mytag.GetTagInfo()
 	if tagOK != nil {
 		message = fmt.Sprintf("TAG: no tag found\nHost: %s\n%s: %s\nCheck running mode: %s\nError: %s\n",
 				hostName, myGlobal.MyProgname, errWord, checkMode, checkErr)
 	} else {
 		message = fmt.Sprintf("TAG: %s\nHost: %s\n%s: %s\nCheck running mode: %s\nError: %s\n",
-			tagInfo, hostName, myGlobal.MyProgname, errWord, checkMode, checkErr)
+			strings.TrimSpace(tagInfo), hostName, myGlobal.MyProgname, errWord, checkMode, checkErr)
 	}
 	errSubject := fmt.Sprintf("%s : MONITOR ALERT : %s : %s ", errWord, hostName, myGlobal.MyProgname)
 	// Syslog : only if syslog tag was not set to of
@@ -81,10 +85,10 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 	// 	fmt.Printf("\nPD %s\n\n", message)
 	// }
 	// Slack : only if key and channel are not empty
-	// if len(myGlobal.DefaultSlack["slackservicekey"]) > 0 &&
-	//    len(myGlobal.DefaultSlack["slackchannel"]) > 0 {
-	// 	fmt.Printf("\nSlack %s\n\n", message)
-	// }
+	if len(myGlobal.DefaultSlack["slackservicekey"]) > 0 &&
+	   len(myGlobal.DefaultSlack["slackchannel"]) > 0 {
+		alertSlack(message)
+	}
 	return err
 }
 
@@ -125,5 +129,29 @@ func alertEmail(message string, subject string) error {
 			emailTo.String(), emailSubject, message)
 	// send the email
 	err := smtp.SendMail(emailHost, authEmail, emailFrom.String(), []string{emailTo.String()}, []byte(fromAndBody))
+	return err
+}
+
+// Function to post an alert in slack
+func alertSlack(message string) error {
+	slackAPI := slack.New(myGlobal.DefaultSlack["slackservicekey"])
+	slackMsg := fmt.Sprintf(":imp: `- %s error: %s` :disappointed:\n", myGlobal.MyProgname, message)
+	// remove all carriage return
+	slackMsg = strings.TrimSuffix(strings.Replace(slackMsg, "\n", " - ", -1), " - ")
+	// need to build a minimum config
+	slackMsgConfig := slack.PostMessageParameters{
+		Username:		"MONITOR",
+		AsUser:			false,
+		Parse:			"",
+		LinkNames:		0,
+		Attachments:	nil,
+		UnfurlLinks:	false,
+		UnfurlMedia:	true,
+		IconURL:		"",
+		IconEmoji:		myGlobal.DefaultSlack["iconemoji"],
+		Markdown:		true,
+		EscapeText:		true,
+	}
+	_, _, err := slackAPI.PostMessage(myGlobal.DefaultSlack["slackchannel"], slackMsg, slackMsgConfig)
 	return err
 }

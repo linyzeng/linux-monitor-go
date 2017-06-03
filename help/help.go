@@ -63,7 +63,7 @@ func SetupHelp(cfg []string) {
 	for defaultKey, defaultValue := range myGlobal.DefaultValues {
 		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
 	}
-	fmt.Printf("\n\t# Syslog support, to disable set tag value to off.\n")
+	fmt.Printf("\n\t# Syslog support, to disable set tag value to off, syslogtag default to %s,\n", myGlobal.MyProgname)
 	fmt.Printf("syslog:\n")
 	for defaultKey, defaultValue := range myGlobal.DefaultSyslog {
 		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
@@ -73,13 +73,13 @@ func SetupHelp(cfg []string) {
 	for defaultKey, defaultValue := range myGlobal.DefaultPD {
 		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
 	}
-	fmt.Printf("\n\t# Optional for slack support, if any of these keys are empty then pagerduty is not used.\n")
+	fmt.Printf("\n\t# Optional for slack support, if slackservicekey and/or slackchannel is empty then slack is not used.\n")
 	fmt.Printf("slack:\n")
 	for defaultKey, defaultValue := range myGlobal.DefaultSlack {
 		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
 	}
 	fmt.Printf("\n\nNOTE\n")
-	fmt.Printf("\t* Any key that has any of these charaters: '#[]()*' in their value must be double quoted!\n") 
+	fmt.Printf("\t* Any key that has any of these charaters: ':#[]()*' in their value must be double quoted!\n") 
 	fmt.Printf("\t* Syslog Valid Priority: ")
 	for keyPriority, _ := range myUtils.SyslogPriority {
 		fmt.Printf("%s ", keyPriority)

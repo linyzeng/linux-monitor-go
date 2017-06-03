@@ -1,6 +1,6 @@
 
 # See check for their release status
-# CURRENT : working on the packages:  pagerduty, slack
+# CURRENT : working on the packages: pagerduty
 # NEXT    : stats logging
 
 ## nagios-plugins-go : Nagios plugins written in GO
@@ -39,29 +39,29 @@ Here are the shared configurarion:
 	# tagfile and tagkeyname are use to get the tag info by looking for the key tagkeyname in the
 	# configured file tagfile, the format need to be just 'keyname value' nothing fancy!
 common:
-  emailhostport: 25
-  emailfrom:
   debug: false
+  emailhostport: 25
+  emailhost: localhost
   emailto:
   emailtoname:
+  emailfrom:
+  emailfromname:
   emailuser:
   emailpass:
-  emailhost: localhost
-  nolog: false
-  logdir: /var/log/nagios-plugins-go
-  logmaxsize: 128
-  logmaxbackups: 3
-  logmaxage: 10
-  emailfromname:
   tagfile:
   tagkeyname:
   noalert: false
-  logfile: /var/log/nagios-plugins-go/check-mysql.log
+  nolog: false
+  logmaxsize: 128
+  logmaxbackups: 3
+  logmaxage: 10
+  logdir: /var/log/nagios-plugins-go
+  logfile: /var/log/nagios-plugins-go/{check name}.log
 
-	# Syslog support, to disable set tag value to off.
+	# Syslog support, to disable set tag value to off, syslogtag default to check name.
 syslog:
-  syslogfacility: LOG_SYSLOG
   syslogtag:
+  syslogfacility: LOG_SYSLOG
   syslogpriority: LOG_INFO
 
 	# Optional for pagerduty support, if any of these keys are empty then pagerduty is not used.
@@ -69,10 +69,11 @@ pagerduty:
   pdservicekey:
   pdservicename:
 
-	# Optional for slack support, if any of these keys are empty then pagerduty is not used.
+	# Optional for slack support, if slackservicekey and/or slackchannel is empty then slack is not used.
 slack:
   slackservicekey:
   slackchannel:
+  iconemoji: ":bangbang::doge:"
 
 NOTE
 	* Any key that has any of these charaters: '#[]()*' in their value must be double quoted!
