@@ -55,7 +55,7 @@ func SetupHelp(cfg []string) {
 		fmt.Printf("  %s:\n", cfg[cnt])
 	}
 	fmt.Printf("\t# Optional add these values in the common section.\n")
-	fmt.Printf("\t# Values shown are the default values. If emailto is empty then no email will be sent.\n")
+	fmt.Printf("\t# Values shown are the default values. If either emailfrom or emailto is empty then no email will be sent.\n")
 	fmt.Printf("\t# tagfile and tagkeyname are use to get teh tag info by loking for the key tagkeyname in the given\n")
 	fmt.Printf("\t#	file tagfile, the format need to be just 'keyname value' too!\n")
 	fmt.Printf("common:\n")

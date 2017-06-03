@@ -98,6 +98,7 @@ var (
 	DefaultDebug		= "false"
 
 	// email
+	DefaultEmailFrom	= ""
 	DefaultEmailTo		= ""
 
 	// syslog
@@ -129,6 +130,7 @@ func init() {
 	DefaultValues["logmaxsize"]			=	strconv.Itoa(DefaultLogMaxSize)
 	DefaultValues["logmaxbackups"]		=	strconv.Itoa(DefaultLogMaxBackups)
 	DefaultValues["logmaxage"]			=	strconv.Itoa(DefaultLogMaxAge)
+	DefaultValues["emailfrom"]			=	DefaultEmailFrom
 	DefaultValues["emailto"]			=	DefaultEmailTo
 	//these are for getting a instance/system tag
 	DefaultValues["tagfile"]			=	 ""

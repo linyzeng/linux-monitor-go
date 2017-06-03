@@ -37,6 +37,8 @@ package alerts
 import (
 	"fmt"
 	"log/syslog"
+	"net/smtp"
+
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 )
@@ -83,4 +85,8 @@ func alertSyslog(message string) error {
 	}
 	_, err = syslogHandler.Write([]byte(message))
 	return err
+}
+
+// Function to send an alert email
+func alertEmail(message string) error {
 }
