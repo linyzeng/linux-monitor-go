@@ -138,9 +138,9 @@ func alertSlack(message string) error {
 	slackMsg := fmt.Sprintf(":imp: `- %s error: %s` :disappointed:\n", myGlobal.MyProgname, message)
 	// remove all carriage return
 	slackMsg = strings.TrimSuffix(strings.Replace(slackMsg, "\n", " - ", -1), " - ")
-	// need to build a minimum config
-	slackMsgConfig := slack.PostMessageParameters{
-		Username:		"MONITOR",
+	// need to build a minimum config, the user profile
+	slackUserProfile := slack.PostMessageParameters{
+		Username:		myGlobal.DefaultSlack["slackuser"],
 		AsUser:			false,
 		Parse:			"",
 		LinkNames:		0,
@@ -152,6 +152,6 @@ func alertSlack(message string) error {
 		Markdown:		true,
 		EscapeText:		true,
 	}
-	_, _, err := slackAPI.PostMessage(myGlobal.DefaultSlack["slackchannel"], slackMsg, slackMsgConfig)
+	_, _, err := slackAPI.PostMessage(myGlobal.DefaultSlack["slackchannel"], slackMsg, slackUserProfile)
 	return err
 }

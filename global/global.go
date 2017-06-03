@@ -124,6 +124,7 @@ var (
 	DefaultSlack			map[string]string
 	DefaultSlackServiceKey	= ""
 	DefaultSlackChannel		= ""
+	DefaultSlackUser		= "MONITOR"
 	DefaultSlackIconEmoji	= ":bangbang:"
 
 	// result wording
@@ -166,5 +167,6 @@ func init() {
 	DefaultSlack = make(map[string]string)
 	DefaultSlack["slackservicekey"]	=	DefaultSlackServiceKey
 	DefaultSlack["slackchannel"]	=	DefaultSlackChannel
+	DefaultSlack["slackuser"]		=	DefaultSlackUser
 	DefaultSlack["iconemoji"]		=	DefaultSlackIconEmoji
 }
