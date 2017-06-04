@@ -81,7 +81,7 @@ func SetupHelp(cfg []string) {
 	printCfgValues("slack", "slackservicekey", myGlobal.DefaultSlack)
 	fmt.Printf("\nNOTE\n")
 	if len(myGlobal.ExtraInfo) > 0 {
-		fmt.Printf("%s\n", myGlobal.ExtraInfo)
+		fmt.Printf("\t* %s\n", myGlobal.ExtraInfo)
 	}
 	fmt.Printf("\t* The key must be all lowercase!\n")
 	fmt.Printf("\t* Any key value that contains any of these charaters: ':#[]()*' must be double quoted!\n")
