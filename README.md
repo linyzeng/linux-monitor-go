@@ -90,7 +90,7 @@ you do not care about or use the default.
 	  tagkeyname:
 	# to disable set `syslogtag: off`.
 	syslog:
-	  syslogtag: [check-mysql]
+	  syslogtag: [{name-of-check}]
 	  syslogpriority: LOG_INFO
 	  syslogfacility: LOG_SYSLOG
 	# to disable set an empty `pdservicekey`.
