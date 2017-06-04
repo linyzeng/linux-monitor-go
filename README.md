@@ -57,8 +57,10 @@ seems like a lot, but you should only need to configure these once, or disable t
 you do not care about or use the default.
 
 `Values shown are the default values. Any section can be ommited, it will then use the default values.`
-```html <font color="red">
-if the keys value to disabled a section is shown empty, then the section is disable by default
+```html
+// <span style="color:red">
+if the value of the key is shown empty and the key is used to disable the section, then the section is disable by default
+// <span>
 ```
 ```
 	common:
