@@ -66,65 +66,65 @@ is by default disabled
 	  nolog: false
 	  debug: false
 	  noalert: false
-	# to disable set an empty `logfile`.
+	  stats: false
+	# to disable set an empty `logfile`, if shown empty, then its disable by default.
 	log:
+	  logmaxbackups: 14
+	  logmaxage: 14
 	  logdir: /var/log/nagios-plugins-go
 	  logfile: check-mysql.log
 	  logmaxsize: 128
-	  logmaxbackups: 3
-	  logmaxage: 10
-	# to disable set an empty `statsfile`.
-	stats:
-	  statsdir: /var/log/nagios-plugins-go-stats
-	  statsfile: check-mysql.stats
-	# to disable set an empty `emailto`.
+	# to disable set an empty `emailto`, if shown empty, then its disable by default.
 	email:
 	  emailfrom:
-	  emailto:
-	  emailpass:
-	  emailhost: localhost
 	  emailfromname:
-	  emailtoname:
 	  emailsubjecttag: [MONITOR]
-	  emailuser:
+	  emailpass:
 	  emailhostport: 25
-	# to disable set an empty `tagfile`.
+	  emailto:
+	  emailtoname:
+	  emailuser:
+	  emailhost: localhost
+	# to disable set an empty `tagfile`, if shown empty, then its disable by default.
 	tag:
 	  tagfile:
 	  tagkeyname:
-	# to disable set `syslogtag: off`.
+	# to disable set `syslogtag: off`, if shown empty, then its disable by default.
 	syslog:
-	  syslogtag: [{name-of-check}]
+	  syslogtag: [check-mysql]
 	  syslogpriority: LOG_INFO
 	  syslogfacility: LOG_SYSLOG
-	# to disable set an empty `pdservicekey`.
+	# to disable set an empty `pdservicekey`, if shown empty, then its disable by default.
 	pagerduty:
-	  pdservicekey:
 	  pdservicename:
 	  pdvalidunit: hour
 	  pdevent: MONITOR ALERT
-	# to disable set an empty `slackservicekey`.
+	  pdservicekey:
+	# to disable set an empty `slackservicekey`, if shown empty, then its disable by default.
 	slack:
 	  slackservicekey:
 	  slackchannel:
 	  slackuser: MONITOR
-	  iconemoji: :bangbang:
+```
 
 NOTE
-	* The key most be all lowercase!
-	* Any key that has any of these charaters: ':#[]()*' in their value must be double quoted!
-	* tagfile and tagkeyname are use to get the tag info by looking for the key `tagkeyname` in the
-	  configured file `tagfile`, the format need to be just 'keyname value' nothing fancy!
-	* pagerduty `pdvalidunit` is the unit used to create an event-id so no duplicate is created.
-	  valid choices are hour or minute, so a even create at hour X (or minute X) will result that
-	  pagerduty will not create a new event, it sees it as an update to the previous event,
-	  but do realize there always the possiblity that it could overlaps.
-	  If the `pdvalidunit` is invalid then it defaults to hour, valid options are `hour` and `minute`.
-	* `emailsubjecttag` is use for email filtering.
-	* Syslog Valid `syslogpriority`: LOG_EMERG LOG_CRIT LOG_ERR LOG_WARNING LOG_NOTICE LOG_INFO LOG_DEBUG LOG_ALERT
-	* Syslog Valid `syslogfacility`: LOG_LOCAL3 LOG_LOCAL5 LOG_AUTH LOG_SYSLOG LOG_NEWS LOG_CRON
-		LOG_AUTHPRIV LOG_LOCAL0 LOG_DAEMON LOG_FTP LOG_LOCAL1 LOG_LOCAL2 LOG_LOCAL4
-		LOG_MAIL LOG_LPR LOG_UUCP LOG_LOCAL6 LOG_LOCAL7
+```
+	* The key must be all lowercase!
+	* Any key value that contains any of these charaters: ':#[]()*' must be double quoted!
+	* The key `logmaxsize` value unit is megabytes.
+	* The `tagfile` and `tagkeyname` keys are use to get a tag; useful in AWS, info by looking for
+	  the keyword `tagkeyname` in the configured file `tagfile`, line format: 'keyname value', nothing fancy!
+	* The pagerduty `pdvalidunit` is the unit used to create an event-id so no duplicate is created.
+	  Valid choices are hour or minute. If an event was create at hour X (or minute X) then pagerduty
+	  will not create a new event until the next hour, it sees it as an update to an existing event,.
+	  because it has the same event-id, but do realize there always the possiblity that it could
+	  overlap, certainly if it set to minute, you could get alert every minute!.
+	  If the `pdvalidunit` value is invalid then it defaults to hour, valid options are `hour` or `minute`.
+	* The key `emailsubjecttag` is use for email filtering.
+	* Syslog Valid `syslogpriority`: LOG_INFO LOG_EMERG LOG_ALERT LOG_CRIT LOG_ERR LOG_NOTICE LOG_WARNING LOG_DEBUG
+	* Syslog Valid `syslogfacility`: LOG_AUTH LOG_NEWS LOG_LOCAL7 LOG_MAIL LOG_DAEMON LOG_SYSLOG
+		LOG_UUCP LOG_LOCAL5 LOG_LPR LOG_AUTHPRIV LOG_LOCAL3 LOG_LOCAL4 LOG_LOCAL6
+		LOG_CRON LOG_FTP LOG_LOCAL0 LOG_LOCAL1 LOG_LOCAL2
 ```
 
 
