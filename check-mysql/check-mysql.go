@@ -39,6 +39,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	myInit		"github.com/my10c/nagios-plugins-go/initialize"
@@ -73,6 +74,7 @@ func wrongMode() {
 }
 
 func main() {
+	var thresHold string = ""
 	cfgFile, checkMode := myInit.InitArgs(cfgRequired)
 	switch checkMode {
 		case "slavelag":
@@ -97,9 +99,11 @@ func main() {
 		case "slavelag":
 			warning, critical, _ := myThreshold.SanityCheck(cfgDict["lagwarning"], cfgDict["lagcritical"])
 			exitVal, err = dbCheck.SlaveLagCheck(warning, critical)
+			thresHold = fmt.Sprintf(" (W:%d C:%d )", warning, critical)
 		case "process":
 			warning, critical, _ := myThreshold.SanityCheck(cfgDict["processwarning"], cfgDict["processcritical"])
 			exitVal, err = dbCheck.ProcessStatusCheck(warning, critical)
+			thresHold = fmt.Sprintf(" (W:%d C:%d )", warning, critical)
 		case "dropcreate":
 			exitVal, err = dbCheck.DropCreateCheck(cfgDict["tablename"])
 		case "showconfig":
@@ -112,12 +116,12 @@ func main() {
 	if exitVal != myGlobal.OK {
 		if myGlobal.DefaultValues["noalert"]  == "false" {
 			myAlert.SendAlert(exitVal, checkMode, err.Error())
-		} else {
-			fmt.Printf("%s: %s\nCheck running mode: %s\nError: %s\n",
-				myGlobal.MyProgname, myGlobal.Result[exitVal], checkMode, err.Error())
 		}
+		fmt.Printf("%s %s - Check running mode: %s - Error: %s %s\n",
+			strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], checkMode, err.Error(), thresHold)
 		os.Exit(exitVal)
 	}
-	fmt.Printf("%s, %s:%s %s\n", myGlobal.Result[exitVal], myGlobal.MyProgname, checkMode, err)
+	fmt.Printf("%s %s - Check running mode: %s - %s %s \n",
+		strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], checkMode, err, thresHold)
 	os.Exit(exitVal)
 }

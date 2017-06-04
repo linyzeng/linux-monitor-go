@@ -37,17 +37,11 @@ package alerts
 
 import (
 	"fmt"
-	"log/syslog"
-	"net/mail"
-	"net/smtp"
 	"os"
 	"strings"
 
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 	mytag		"github.com/my10c/nagios-plugins-go/tag"
-
-	"github.com/nlopes/slack"
 )
 
 // Function to sent alerts
@@ -55,6 +49,7 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 	var hostName string
 	var message string
 	var err error = nil
+	var result error = nil
 	// create the full message and subject
 	errWord := myGlobal.Result[exitVal]
 	hostName, hostOK := os.Hostname()
@@ -68,90 +63,56 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 				hostName, myGlobal.MyProgname, errWord, checkMode, checkErr)
 	} else {
 		message = fmt.Sprintf("TAG: %s\nHost: %s\n%s: %s\nCheck running mode: %s\nError: %s\n",
-			strings.TrimSpace(tagInfo), hostName, myGlobal.MyProgname, errWord, checkMode, checkErr)
+			tagInfo, hostName, myGlobal.MyProgname, errWord, checkMode, checkErr)
 	}
-	errSubject := fmt.Sprintf("%s : MONITOR ALERT : %s : %s ", errWord, hostName, myGlobal.MyProgname)
+	// is any of these fails we capture that, hence err could be a ser of errors!
 	// Syslog : only if syslog tag was not set to of
-	if myGlobal.DefaultSyslog["syslogtag"] != "off" {
-		alertSyslog(message)
+	if myGlobal.DefaultSyslog["syslogtag"] != "off" &&
+       len(myGlobal.DefaultSyslog["syslogtag"]) > 0 {
+		result = alertSyslog(message)
+		if result != nil {
+			err = fmt.Errorf("Syslog %s", result.Error())
+		}
 	}
 	// Email : only if emailto is not empty
 	if len(myGlobal.DefaultValues["emailto"]) > 0 {
-		alertEmail(message, errSubject)
+		errSubject := fmt.Sprintf("%s %s: %s : %s ",
+			myGlobal.DefaultValues["emailsubjecttag"], errWord, hostName, myGlobal.MyProgname)
+		result = alertEmail(message, errSubject)
+		if result != nil {
+			if err != nil {
+				// append error
+				err = fmt.Errorf("%s\nEmail %s", err.Error(), result.Error())
+			} else {
+				err = fmt.Errorf("%s", result.Error())
+			}
+		}
 	}
 	// Pagerduty : only if key and service-name are not empty
-	// if len(myGlobal.DefaultPD["pdservicekey"]) > 0 &&
-	//    len(myGlobal.DefaultPD["pdservicename"]) > 0 {
-	// 	fmt.Printf("\nPD %s\n\n", message)
-	// }
+	 if len(myGlobal.DefaultPD["pdservicekey"]) > 0 &&
+		len(myGlobal.DefaultPD["pdservicename"]) > 0 {
+		result = alertPD(message, tagInfo, hostName)
+		if result != nil {
+			if err != nil {
+				// append error
+				err = fmt.Errorf("%s\nPagerduty %s", err.Error(), result.Error())
+			} else {
+				err = fmt.Errorf("%s", result.Error())
+			}
+		}
+	 }
 	// Slack : only if key and channel are not empty
 	if len(myGlobal.DefaultSlack["slackservicekey"]) > 0 &&
-	   len(myGlobal.DefaultSlack["slackchannel"]) > 0 {
-		alertSlack(message)
+		len(myGlobal.DefaultSlack["slackchannel"]) > 0 {
+		result = alertSlack(message)
+		if result != nil {
+			if err != nil {
+				// append error
+				err = fmt.Errorf("%s\nSlack %s", err.Error(), result.Error())
+			} else {
+				err = fmt.Errorf("%s", result.Error())
+			}
+		}
 	}
-	return err
-}
-
-// Function to create an syslog record
-func alertSyslog(message string) error {
-	// get the tag fro syslog
-	tag := myGlobal.DefaultSyslog["syslogtag"]
-	// get the int values
-	priority, facility, err := myUtils.GetSyslog(myGlobal.DefaultSyslog["syslogpriority"],
-			myGlobal.DefaultSyslog["syslogfacility"])
-	if err != nil {
-		return err
-	}
-	// create a syslog handler
-	syslogHandler, err := syslog.New(syslog.Priority(facility|priority), tag)
-	if err != nil {
-		return err
-	}
-	_, err = syslogHandler.Write([]byte(message))
-	return err
-}
-
-// Function to send an alert email
-func alertEmail(message string, subject string) error {
-	// if authEmail - empty then no authentication is required
-	// for now only support PlainAuth
-	authEmail := smtp.PlainAuth("",
-			myGlobal.DefaultValues["emailuser"],
-			myGlobal.DefaultValues["emailpass"],
-			myGlobal.DefaultValues["emailhost"],
-	)
-	// build the email component
-	emailTo := mail.Address{myGlobal.DefaultValues["emailtoname"], myGlobal.DefaultValues["emailto"]}
-	emailFrom := mail.Address{myGlobal.DefaultValues["emailfromname"], myGlobal.DefaultValues["emailfrom"]}
-	emailSubject := subject
-	emailHost := fmt.Sprintf("%s:%s", myGlobal.DefaultValues["emailhost"], myGlobal.DefaultValues["emailhostport"])
-	fromAndBody := fmt.Sprintf("To: %s\r\nSubject: %s\r\n\r\n%s\r\n",
-			emailTo.String(), emailSubject, message)
-	// send the email
-	err := smtp.SendMail(emailHost, authEmail, emailFrom.String(), []string{emailTo.String()}, []byte(fromAndBody))
-	return err
-}
-
-// Function to post an alert in slack
-func alertSlack(message string) error {
-	slackAPI := slack.New(myGlobal.DefaultSlack["slackservicekey"])
-	slackMsg := fmt.Sprintf(":imp: `- %s error: %s` :disappointed:\n", myGlobal.MyProgname, message)
-	// remove all carriage return
-	slackMsg = strings.TrimSuffix(strings.Replace(slackMsg, "\n", " - ", -1), " - ")
-	// need to build a minimum config, the user profile
-	slackUserProfile := slack.PostMessageParameters{
-		Username:		myGlobal.DefaultSlack["slackuser"],
-		AsUser:			false,
-		Parse:			"",
-		LinkNames:		0,
-		Attachments:	nil,
-		UnfurlLinks:	false,
-		UnfurlMedia:	true,
-		IconURL:		"",
-		IconEmoji:		myGlobal.DefaultSlack["iconemoji"],
-		Markdown:		true,
-		EscapeText:		true,
-	}
-	_, _, err := slackAPI.PostMessage(myGlobal.DefaultSlack["slackchannel"], slackMsg, slackUserProfile)
 	return err
 }

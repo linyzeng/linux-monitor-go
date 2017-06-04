@@ -1,7 +1,7 @@
 
 # See check for their release status
-# CURRENT : working on the packages: pagerduty
-# NEXT    : stats logging
+# CURRENT : working on logging
+# NEXT    : stats
 
 ## nagios-plugins-go : Nagios plugins written in GO
 
@@ -58,16 +58,19 @@ common:
   logdir: /var/log/nagios-plugins-go
   logfile: /var/log/nagios-plugins-go/{check name}.log
 
-	# Syslog support, to disable set tag value to off, syslogtag default to check name.
+	# Syslog support, to disable set tag value to off or leave it empty, syslogtag default to check name.
 syslog:
   syslogtag:
   syslogfacility: LOG_SYSLOG
   syslogpriority: LOG_INFO
 
-	# Optional for pagerduty support, if any of these keys are empty then pagerduty is not used.
+	# Optional for pagerduty support, if pdservicekey and/or pdservicename is keys are empty then pagerduty is not used.
 pagerduty:
   pdservicekey:
   pdservicename:
+  pdservicename: MONITOR
+  pdvalidunit: hour
+  pdevent: [MONITOR]
 
 	# Optional for slack support, if slackservicekey and/or slackchannel is empty then slack is not used.
 slack:

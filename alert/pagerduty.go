@@ -25,45 +25,50 @@
 //
 // Version		:	0.1
 //
-// Date			:	June 1, 2017
+// Date			:	June 2, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	June 1, 2014		LIS			First release
+//	June 2, 2017	LIS			First release
 //
+// TODO:
 
-package mysql
+package alerts
 
 import (
-	//"encoding/json"
 	"fmt"
-	//"strconv"
+	"time"
 
-	//myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	//myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	//myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
+	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 
-	PD			"github.com/PagerDuty/go-pagerduty"
+	"github.com/PagerDuty/go-pagerduty"
 )
 
-type PagerDuty struct {
-	ServiceKey string
-	LoggerTag string
-	ServiceName string
-	PostUrl string
-	Event PD.Event
-}
-
-func New(PDCfg map[string]string) *PagerDuty {
-	:wq!
-	return nil
-}
-
-func (pd *PagerDuty) TriggerIncident(tag string, description string) error {
-
-	// create the header for post
-	headers := fmt.Sprintf("{'Authorization': 'Token token={0}'.format(%s), 'Content-type': 'application/json', }", pd.ServiceName)
-
-	_, error := PD.CreateEvent(pd.Event)
-	return error
+// Function to post an alert in pagerduty
+func alertPD(message string, tag string, hostname string) error {
+	var validTime string
+	// create the IncidentKey key value, based on time to that the event is being
+	// todo so we use the global setting whatever we using hour or minute
+	// we do not check invalid choice, it either hour or minute, with hour being default!
+	currTime := time.Now().Local()
+	if myGlobal.DefaultPDValidUnit == "minute" {
+		validTime = fmt.Sprintf("%s", currTime.Format("2006-01-02-04"))
+	} else {
+		validTime = fmt.Sprintf("%s", currTime.Format("2006-01-02-15"))
+	}
+	incidentKey := fmt.Sprintf("%s-%s-%s-%s", validTime, tag, hostname, myGlobal.MyProgname)
+	// create the description based on the give message
+	descriptionEvent := fmt.Sprintf("%s-%s-%s", myGlobal.DefaultPD["pdevent"], myGlobal.MyProgname, hostname)
+	// and now the detail
+	detailsEvent := message
+	// the payload/event to be sent
+	eventPD := pagerduty.Event{
+		ServiceKey:		myGlobal.DefaultPD["pdservicekey"],
+		Type:			"trigger",
+		IncidentKey:	incidentKey,
+		Description:	descriptionEvent,
+		Details:		detailsEvent,
+	}
+	_, err := pagerduty.CreateEvent(eventPD)
+	return err
 }

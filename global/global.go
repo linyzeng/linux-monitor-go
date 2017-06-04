@@ -100,14 +100,15 @@ var (
 	DefaultDebug		= "false"
 
 	// email
-	DefaultEmailFrom		= ""
-	DefaultEmailFromName	= ""
-	DefaultEmailTo			= ""
-	DefaultEmailToName		= ""
-	DefaultEmailUser		= ""
-	DefaultEmailpassword	= ""
-	DefaultEmailhost		= "localhost"
-	DefaultEmailHostPort	= 25
+	DefaultEmailFrom			= ""
+	DefaultEmailFromName		= ""
+	DefaultEmailTo				= ""
+	DefaultEmailToName			= ""
+	DefaultEmailUser			= ""
+	DefaultEmailpassword		= ""
+	DefaultEmailhost			= "localhost"
+	DefaultEmailHostPort		= 25
+	DefaultEmailHostSubjectTag	= "[MONITOR]"
 
 	// syslog
 	DefaultSyslog			map[string]string
@@ -119,6 +120,8 @@ var (
 	DefaultPD				map[string]string
 	DefaultPDServiceKey		= ""
 	DefaultPDServiceName	= ""
+	DefaultPDValidUnit		= "hour"
+	DefaultPDEvent			= "MONITOR ALERT"
 
 	// slack
 	DefaultSlack			map[string]string
@@ -147,6 +150,7 @@ func init() {
 	DefaultValues["emailfromname"]		=	DefaultEmailFromName
 	DefaultValues["emailto"]			=	DefaultEmailTo
 	DefaultValues["emailtoname"]		=	DefaultEmailToName
+	DefaultValues["emailsubjecttag"]	=	DefaultEmailHostSubjectTag
 	DefaultValues["emailuser"]			=	DefaultEmailUser
 	DefaultValues["emailpass"]			=	DefaultEmailpassword
 	DefaultValues["emailhost"]			=	DefaultEmailhost
@@ -163,6 +167,8 @@ func init() {
 	DefaultPD = make(map[string]string)
 	DefaultPD["pdservicekey"]		=	DefaultPDServiceKey
 	DefaultPD["pdservicename"]		=	DefaultPDServiceName
+	DefaultPD["pdvalidunit"]		=	DefaultPDValidUnit
+	DefaultPD["pdevent"]			=	DefaultPDEvent
 	// for slack
 	DefaultSlack = make(map[string]string)
 	DefaultSlack["slackservicekey"]	=	DefaultSlackServiceKey

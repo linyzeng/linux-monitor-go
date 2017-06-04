@@ -178,7 +178,7 @@ func InitArgs(cfg []string) (string, string) {
 	noalert := flag.Bool("noalert", false, "Send no alert.")
 	nolog := flag.Bool("nolog", false, "Do not log result.")
 	flag.Var(&myConfigFile, "config", "Configuration file to be used.")
-	flag.Var(&myMode, "mode", "check mode.")
+	flag.Var(&myMode, "mode", "check mode, use `-mode help` to see available modes.")
 	flag.Parse()
 	if *version {
 		fmt.Printf("%s\n", myGlobal.MyVersion)

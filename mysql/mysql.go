@@ -51,6 +51,7 @@ type dbMysql struct {
 	*sql.DB
 }
 
+// Function to create the mysql object and connects to the mysql
 func New(mysqlCfg map[string]string) *dbMysql {
 	// set the username and password
 	mysql_user := fmt.Sprintf("%s:%s@", mysqlCfg["username"], mysqlCfg["password"])
@@ -193,7 +194,7 @@ func (db *dbMysql) SlaveLagCheck(warning int, critical int)  (int, error) {
 		err := fmt.Errorf("Slave is behind by %d", currStatusInt)
 		return currTholdStatus, err
 	}
-	err = fmt.Errorf("Slave lag by %d", currStatusInt)
+	err = fmt.Errorf("Slave lag %d", currStatusInt)
 	return currTholdStatus, err
 }
 

@@ -31,47 +31,34 @@
 // 	Date:			Author:		Info:
 //	June 2, 2017	LIS			First release
 //
+// TODO: process error
 
-package tag
+package alerts
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strings"
+	"net/mail"
+	"net/smtp"
 
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 )
 
-// Function to get a tag specify in the file with the specify tagkey
-func GetTagInfo() (string, error) {
-	var tagInfo string
-	var err error = nil
-
-	// make sure both tagfile and tagkeyname were set
-	if len(myGlobal.DefaultValues["tagfile"]) > 0 &&
-		len(myGlobal.DefaultValues["tagkeyname"]) > 0 {
-		// open given tag file
-		tagFile, ok := os.Open(myGlobal.DefaultValues["tagfile"])
-		if ok != nil {
-			err = fmt.Errorf("Unable to open the tag file %s", myGlobal.DefaultValues["tagfile"])
-			return tagInfo, err
-		}
-		// make sure we closed the file
-		defer tagFile.Close()
-		// now read file and search for the tagkeyname
-		scanner := bufio.NewScanner(tagFile)
-		for scanner.Scan() {
-			currLine := scanner.Text()
-			if strings.HasPrefix(currLine, myGlobal.DefaultValues["tagkeyname"]) {
-				tagInfo = strings.TrimPrefix(currLine, myGlobal.DefaultValues["tagkeyname"])
-				return strings.TrimSpace(tagInfo), err
-			}
-		}
-	} else {
-		err = fmt.Errorf("Missing either tagfile or tagkeyname or both")
-		return tagInfo, err
-	}
-	err = fmt.Errorf("Requested tagkeyname %s not found", myGlobal.DefaultValues["tagkeyname"])
-	return tagInfo, err
+// Function to send an alert email
+func alertEmail(message string, subject string) error {
+	// if authEmail - empty then no authentication is required
+	// for now only support PlainAuth
+	authEmail := smtp.PlainAuth("",
+			myGlobal.DefaultValues["emailuser"],
+			myGlobal.DefaultValues["emailpass"],
+			myGlobal.DefaultValues["emailhost"],
+	)
+	// build the email component
+	emailTo := mail.Address{myGlobal.DefaultValues["emailtoname"], myGlobal.DefaultValues["emailto"]}
+	emailFrom := mail.Address{myGlobal.DefaultValues["emailfromname"], myGlobal.DefaultValues["emailfrom"]}
+	emailHost := fmt.Sprintf("%s:%s", myGlobal.DefaultValues["emailhost"], myGlobal.DefaultValues["emailhostport"])
+	fromAndBody := fmt.Sprintf("To: %s\r\nSubject: %s\r\n\r\n%s\r\n",
+			emailTo.String(), subject, message)
+	// send the email
+	err := smtp.SendMail(emailHost, authEmail, emailFrom.String(), []string{emailTo.String()}, []byte(fromAndBody))
+	return err
 }

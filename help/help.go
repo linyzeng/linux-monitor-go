@@ -80,12 +80,12 @@ func SetupHelp(cfg []string) {
 	}
 	fmt.Printf("\n\nNOTE\n")
 	fmt.Printf("\t* Any key that has any of these charaters: ':#[]()*' in their value must be double quoted!\n") 
-	fmt.Printf("\t* Syslog Valid Priority: ")
+	fmt.Printf("\t* Syslog Valid `syslogpriority`: ")
 	for keyPriority, _ := range myUtils.SyslogPriority {
 		fmt.Printf("%s ", keyPriority)
 	}
 	cnt := 0
-	fmt.Printf("\n\t* Syslog Valid Facility: ")
+	fmt.Printf("\n\t* Syslog Valid `syslogfacility`: ")
 	for keyFacility, _ := range myUtils.SyslogFacility {
 		if cnt > 5 {
 			fmt.Printf("\n\t\t%s ", keyFacility)
@@ -96,6 +96,12 @@ func SetupHelp(cfg []string) {
 		}
 	}
 	fmt.Printf("\n")
+	fmt.Printf("\t* pagerduty `pdvalidunit` is the unit used to create an event-id so no duplicate is created.\n")
+	fmt.Printf("\t  valid choices are hour or minute, so a even create at hour X (or minute X) will result that\n")
+	fmt.Printf("\t  pagerduty will not create a new event, it sees it as an update to the previous event,\n")
+	fmt.Printf("\t  but do realize there always the possiblity that it could overlaps.\n")
+	fmt.Printf("\t  If the `pdvalidunit` is invalid then it defaults to hour, valid options are `hour` and `minute`.\n")
+	fmt.Printf("\t  `emailsubjecttag` is use for email filtering.\n")
 	os.Exit(0)
 }
 

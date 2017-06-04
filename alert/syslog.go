@@ -31,47 +31,33 @@
 // 	Date:			Author:		Info:
 //	June 2, 2017	LIS			First release
 //
+// TODO: process error
 
-package tag
+package alerts
 
 import (
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
+	"log/syslog"
 
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 )
 
-// Function to get a tag specify in the file with the specify tagkey
-func GetTagInfo() (string, error) {
-	var tagInfo string
-	var err error = nil
-
-	// make sure both tagfile and tagkeyname were set
-	if len(myGlobal.DefaultValues["tagfile"]) > 0 &&
-		len(myGlobal.DefaultValues["tagkeyname"]) > 0 {
-		// open given tag file
-		tagFile, ok := os.Open(myGlobal.DefaultValues["tagfile"])
-		if ok != nil {
-			err = fmt.Errorf("Unable to open the tag file %s", myGlobal.DefaultValues["tagfile"])
-			return tagInfo, err
-		}
-		// make sure we closed the file
-		defer tagFile.Close()
-		// now read file and search for the tagkeyname
-		scanner := bufio.NewScanner(tagFile)
-		for scanner.Scan() {
-			currLine := scanner.Text()
-			if strings.HasPrefix(currLine, myGlobal.DefaultValues["tagkeyname"]) {
-				tagInfo = strings.TrimPrefix(currLine, myGlobal.DefaultValues["tagkeyname"])
-				return strings.TrimSpace(tagInfo), err
-			}
-		}
-	} else {
-		err = fmt.Errorf("Missing either tagfile or tagkeyname or both")
-		return tagInfo, err
+// Function to create an syslog record
+func alertSyslog(message string) error {
+	return nil
+	// get the tag fro syslog
+	tag := myGlobal.DefaultSyslog["syslogtag"]
+	// get the int values
+	priority, facility, err := myUtils.GetSyslog(myGlobal.DefaultSyslog["syslogpriority"],
+			myGlobal.DefaultSyslog["syslogfacility"])
+	if err != nil {
+		return err
 	}
-	err = fmt.Errorf("Requested tagkeyname %s not found", myGlobal.DefaultValues["tagkeyname"])
-	return tagInfo, err
+	// create a syslog handler
+	syslogHandler, err := syslog.New(syslog.Priority(facility|priority), tag)
+	if err != nil {
+		return err
+	}
+	_, err = syslogHandler.Write([]byte(message))
+	return err
 }
