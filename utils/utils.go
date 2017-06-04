@@ -130,7 +130,8 @@ func StdOutAndLog(message string) {
 // Function to check if the user that runs the app is root
 func IsRoot() {
 	if os.Geteuid() != 0 {
-		StdOutAndLog(fmt.Sprintf("%s must be run as root.", myGlobal.MyProgname))
+		// since this checked the first time, there will be no log available yet
+		fmt.Printf("-< %s must be run as root. >-\n", myGlobal.MyProgname)
 		os.Exit(1)
 	}
 }

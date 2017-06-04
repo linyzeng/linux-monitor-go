@@ -76,6 +76,8 @@ func wrongMode() {
 }
 
 func main() {
+	// need to be root since the config file wil have passwords
+	myUtils.IsRoot()
 	var thresHold string = ""
 	var exitMsg string
 	cfgFile, checkMode := myInit.InitArgs(cfgRequired)
