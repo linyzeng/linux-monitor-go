@@ -17,12 +17,12 @@ as a nagios-plugin framework without to have re-investing the wheel :)
 ### Single configuration
 An other thing was the check's flags, sometime there are a lot of them, so now instead
 of having these given on the command-line, they are now defined in the configuration file,
-Example `warning` instead of `-w value`, just set 'warning: value' in configuration file.
+Example `warning` instead of `-w value`, just set `warning: value` in configuration file.
 
 My choice for the file format is yaml. The reason is very simple, is easy to read
 and to create. Given the flag `-setup`, the check will show you what are the available
 configurations such as threshlold name. Some flags can be query with the keyword `help`,
-example `-mode help` to show valid modes and required configuration keys name.
+example `-mode help` to show all the valid modes and the required configuration keys name.
 
 For each check create a section `check-name:` and under it add the configuration value,
 such warning- and critical-thresholds.
@@ -37,24 +37,27 @@ example
 ```
 
 #### Trick
-With the flag `-config` you can use the same check for different needs. Also
-you could copy the same binary and now you can have multiple config for the same check.
+With the flag `-config` you can use the same check for different needs. An other neat trick
+is that could copy the same binary and now you can have single configuration for the same check.
 Example:
 	ln -s check-a check-b
+	ln -s check-a check-c
 the configuration would then look like this
 ```
 check-a:
   username: momo
 check-b:
   username: mimi
+check-c:
+  username: mumu
 ```
 
 Here are the shared configurarion:
 seems like a lot, but you should only need to configure these once, or disable the one
 you do not care about or use the default.
 
+`Values shown are the default values. Any section can be ommited, it will then use the default values.`
 ```
-# Values shown are the default values. Any section can be ommited, it will then use the default values.
 	common:
 	  nolog: false
 	  debug: false

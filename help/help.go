@@ -48,7 +48,7 @@ import (
 func printCfgValues(sectioName string, disableKey string, cfgDict map[string]string) {
 	if len(disableKey) > 0 {
 		if strings.Contains(disableKey, ":") {
-			fmt.Printf("\t# to disable set `%s`.\n", disableKey)
+			fmt.Printf("\t# to disable set `%s`, if shown empty, then its disable by default.\n", disableKey)
 		} else {
 			fmt.Printf("\t# to disable set an empty `%s`.\n", disableKey)
 		}
@@ -80,15 +80,16 @@ func SetupHelp(cfg []string) {
 	printCfgValues("pagerduty", "pdservicekey", myGlobal.DefaultPD)
 	printCfgValues("slack", "slackservicekey", myGlobal.DefaultSlack)
 	fmt.Printf("\nNOTE\n")
-	fmt.Printf("\t* The key most be all lowercase!\n")
-	fmt.Printf("\t* Any key that has any of these charaters: ':#[]()*' in their value must be double quoted!\n") 
+	fmt.Printf("\t* The key must be all lowercase!\n")
+	fmt.Printf("\t* Any key value that contains any of these charaters: ':#[]()*' must be double quoted!\n")
 	fmt.Printf("\t* tagfile and tagkeyname are use to get the tag info by looking for the key `tagkeyname` in the\n")
 	fmt.Printf("\t  configured file `tagfile`, the format need to be just 'keyname value' nothing fancy!\n")
 	fmt.Printf("\t* pagerduty `pdvalidunit` is the unit used to create an event-id so no duplicate is created.\n")
-	fmt.Printf("\t  valid choices are hour or minute, so a even create at hour X (or minute X) will result that\n")
-	fmt.Printf("\t  pagerduty will not create a new event, it sees it as an update to the previous event,\n")
-	fmt.Printf("\t  but do realize there always the possiblity that it could overlaps.\n")
-	fmt.Printf("\t  If the `pdvalidunit` is invalid then it defaults to hour, valid options are `hour` and `minute`.\n")
+	fmt.Printf("\t  Valid choices are hour or minute. If an event was create at hour X (or minute X) then pagerduty\n")
+	fmt.Printf("\t  will not create a new event until the next hour, it sees it as an update to an existing event,.\n")
+	fmt.Printf("\t  because it has the same event-id, but do realize there always the possiblity that it could\n")
+	fmt.Printf("\t  overlap, certainly if it set to minute, you could get alert every minute!.\n")
+	fmt.Printf("\t  If the `pdvalidunit` is invalid then it defaults to hour, valid options are `hour` or `minute`.\n")
 	fmt.Printf("\t* `emailsubjecttag` is use for email filtering.\n")
 	fmt.Printf("\t* Syslog Valid `syslogpriority`: ")
 	for keyPriority, _ := range myUtils.SyslogPriority {
