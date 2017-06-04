@@ -37,6 +37,7 @@ package tag
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -55,6 +56,7 @@ func GetTagInfo() (string, error) {
 		tagFile, ok := os.Open(myGlobal.DefaultTag["tagfile"])
 		if ok != nil {
 			err = fmt.Errorf("Unable to open the tag file %s", myGlobal.DefaultTag["tagfile"])
+			log.Printf("%s\n", err.Error())
 			return tagInfo, err
 		}
 		// make sure we closed the file
@@ -70,8 +72,10 @@ func GetTagInfo() (string, error) {
 		}
 	} else {
 		err = fmt.Errorf("Missing either tagfile or tagkeyname or both")
+		log.Printf("%s\n", err.Error())
 		return tagInfo, err
 	}
 	err = fmt.Errorf("Requested tagkeyname %s not found", myGlobal.DefaultTag["tagkeyname"])
+	log.Printf("%s\n", err.Error())
 	return tagInfo, err
 }

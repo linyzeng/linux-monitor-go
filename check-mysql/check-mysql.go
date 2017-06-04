@@ -38,6 +38,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -75,6 +76,7 @@ func wrongMode() {
 
 func main() {
 	var thresHold string = ""
+	var exitMsg string
 	cfgFile, checkMode := myInit.InitArgs(cfgRequired)
 	switch checkMode {
 		case "slavelag":
@@ -87,7 +89,7 @@ func main() {
 			cfgRequired = append(cfgRequired, "tablename" )
 	}
 	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
-	myInit.InitLog(cfgDict)
+	myInit.InitLog()
 	myUtils.SignalHandler()
 	dbCheck := myMySQL.New(cfgDict)
 	data := time.Now().Format(time.RFC3339)
@@ -117,11 +119,13 @@ func main() {
 		if myGlobal.DefaultValues["noalert"]  == "false" {
 			myAlert.SendAlert(exitVal, checkMode, err.Error())
 		}
-		fmt.Printf("%s %s - Check running mode: %s - Error: %s %s\n",
+		exitMsg = fmt.Sprintf("%s %s - Check running mode: %s - Error: %s %s\n",
 			strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], checkMode, err.Error(), thresHold)
-		os.Exit(exitVal)
-	}
-	fmt.Printf("%s %s - Check running mode: %s - %s %s \n",
+	} else {
+		exitMsg = fmt.Sprintf("%s %s - Check running mode: %s - %s %s \n",
 		strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], checkMode, err, thresHold)
+	}
+	fmt.Printf("%s", exitMsg)
+	log.Printf("%s", exitMsg)
 	os.Exit(exitVal)
 }

@@ -198,6 +198,7 @@ func (db *dbMysql) SlaveLagCheck(warning int, critical int)  (int, error) {
 	return currTholdStatus, err
 }
 
+// Get current process count
 func (db *dbMysql) ProcessStatusCheck(warning int, critical int)  (int, error) {
 	var totalRows int
 	err := db.QueryRow("SELECT COUNT(*) FROM information_schema.PROCESSLIST").Scan(&totalRows)

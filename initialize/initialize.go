@@ -75,6 +75,7 @@ func getYamlValue(yamFile *simpleyaml.Yaml, section string, key string) (string,
 	keyExist := yamFile.GetPath(section, key)
 	if keyExist.IsFound() == false {
 		err := fmt.Errorf("Section %s and/or key %s not found\n", section, key)
+        log.Printf("%s\n", err.Error())
 		return "", err
 	}
 	// We need to ge the value and since we do not know what it is, we check
@@ -92,6 +93,7 @@ func getYamlValue(yamFile *simpleyaml.Yaml, section string, key string) (string,
 		return strconv.FormatBool(value), err
 	}
 	err := fmt.Errorf("Unsupported value for section %s and key %s, suported are: string, int and bool\n", section, key)
+	log.Printf("%s\n", err.Error())
 	return "", err
 }
 
@@ -110,6 +112,8 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		if newValue, err := getYamlValue(yamlFile, "common", defaultKey); err == nil {
 			// replace the default value
 			myGlobal.DefaultValues[defaultKey] = newValue
+		} else {
+			log.Printf("%s\n", err.Error())
 		}
 	}
 	// for log
@@ -117,6 +121,8 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		if newValue, err := getYamlValue(yamlFile, "log", defaultLog); err == nil {
 			// replace the default value
 			myGlobal.DefaultLog[defaultLog] = newValue
+		} else {
+			log.Printf("%s\n", err.Error())
 		}
 	}
 	// for stats
@@ -124,6 +130,8 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		if newValue, err := getYamlValue(yamlFile, "stats", defaultStats); err == nil {
 			// replace the default value
 			myGlobal.DefaultStats[defaultStats] = newValue
+		} else {
+			log.Printf("%s\n", err.Error())
 		}
 	}
 	// for tag
@@ -131,6 +139,8 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		if newValue, err := getYamlValue(yamlFile, "tag", defaultTag); err == nil {
 			// replace the default value
 			myGlobal.DefaultTag[defaultTag] = newValue
+		} else {
+			log.Printf("%s\n", err.Error())
 		}
 	}
 	// for email
@@ -138,6 +148,8 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		if newValue, err := getYamlValue(yamlFile, "email", defaultEmail); err == nil {
 			// replace the default value
 			myGlobal.DefaultEmail[defaultEmail] = newValue
+		} else {
+			log.Printf("%s\n", err.Error())
 		}
 	}
 	// for Syslog
@@ -145,6 +157,8 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		if newValue, err := getYamlValue(yamlFile, "syslog", defaultSyslog); err == nil {
 			// replace the default value
 			myGlobal.DefaultSyslog[defaultSyslog] = newValue
+		} else {
+			log.Printf("%s\n", err.Error())
 		}
 	}
 	// for Pagerduty
@@ -152,6 +166,8 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		if newValue, err := getYamlValue(yamlFile, "pagerduty", defaultPD); err == nil {
 			// replace the default value
 			myGlobal.DefaultPD[defaultPD] = newValue
+		} else {
+			log.Printf("%s\n", err.Error())
 		}
 	}
 	// for Slack
@@ -159,6 +175,8 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		if newValue, err := getYamlValue(yamlFile, "slack", defaultSlack); err == nil {
 			// replace the default value
 			myGlobal.DefaultSlack[defaultSlack] = newValue
+		} else {
+			log.Printf("%s\n", err.Error())
 		}
 	}
 	// set the config value
@@ -174,20 +192,29 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 	// make sure we have all required configs
 	if len(missingKeys) != 0 {
 		fmt.Printf("Following keys are missing in the configration files: %s\n", missingKeys)
+		log.Printf("Following keys are missing in the configration files: %s\n", missingKeys)
 		os.Exit(2)
 	}
 	return dictCfg
 }
 
 // Function to initialize logging
-func InitLog(logSettings map[string]string) {
-	if len(logSettings["logfile"]) > 0 {
+func InitLog() {
+	if len(myGlobal.DefaultLog["logfile"]) > 0 {
+		// create directory
+		err := os.MkdirAll(myGlobal.DefaultLog["logdir"], 0755) 
+		if err != nil {
+			fmt.Printf("Unable to create Log directory, logs are send to console!\n")
+			log.Printf("%s\n", err.Error())
+			return
+		}
+		logFileFullPath := fmt.Sprintf("%s/%s", myGlobal.DefaultLog["logdir"], myGlobal.DefaultLog["logfile"])
 		log.SetFlags(log.LstdFlags | log.Lshortfile)
-		MaxSize, _		:= strconv.Atoi(logSettings["logmaxsize"])
-		MaxBackups, _	:= strconv.Atoi(logSettings["logmaxbackups"])
-		MaxAge, _		:= strconv.Atoi(logSettings["logmaxage"])
+		MaxSize, _		:= strconv.Atoi(myGlobal.DefaultLog["logmaxsize"])
+		MaxBackups, _	:= strconv.Atoi(myGlobal.DefaultLog["logmaxbackups"])
+		MaxAge, _		:= strconv.Atoi(myGlobal.DefaultLog["logmaxage"])
 		log.SetOutput(&lumberjack.Logger{
-			Filename:	logSettings["logfile"],
+			Filename:	logFileFullPath,
 			MaxSize:	MaxSize,
 			MaxBackups:	MaxBackups,
 			MaxAge:		MaxAge,

@@ -37,6 +37,7 @@ package alerts
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -110,6 +111,9 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 				err = fmt.Errorf("%s", result.Error())
 			}
 		}
+	}
+	if err != nil {
+		log.Printf("%s\n", err.Error())
 	}
 	return err
 }

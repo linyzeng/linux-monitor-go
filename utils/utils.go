@@ -152,6 +152,7 @@ func GetFileMD5(filePath string) (string, error) {
 	// Open the passed argument and check for any error
 	file, err := os.Open(filePath)
 	if err != nil {
+		log.Printf("%s\n", err.Error())
 		return returnMD5String, err
 	}
 	// Tell the program to call the following function when the current function returns
@@ -160,6 +161,7 @@ func GetFileMD5(filePath string) (string, error) {
 	hash := md5.New()
 	// Copy the file in the hash interface and check for any error
 	if _, err := io.Copy(hash, file); err != nil {
+		log.Printf("%s\n", err.Error())
 		return returnMD5String, err
 	}
 	// Get the 16 bytes hash
@@ -176,6 +178,7 @@ func GetFilePtrMD5(filePtr *os.File) (string, error) {
 	hash := md5.New()
 	// Copy the file in the hash interface and check for any error
 	if _, err := io.Copy(hash, filePtr); err != nil {
+		log.Printf("%s\n", err.Error())
 		return returnMD5String, err
 	}
 	// Get the 16 bytes hash
