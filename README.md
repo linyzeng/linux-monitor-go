@@ -1,7 +1,8 @@
 
-# See check for their release status
-# CURRENT : working on stats
-# NEXT    : check-disk
+## See check for their release status
+## Current 	: working on stats
+## Next    	: check-disk
+## Released ; check-mysql (minus stats)
 
 ## nagios-plugins-go : Nagios plugins written in GO
 
