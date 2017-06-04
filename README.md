@@ -58,7 +58,7 @@ you do not care about or use the default.
 
 `Values shown are the default values. Any section can be ommited, it will then use the default values.`
 ```html
-// <style="color:red;">
+<style="color:red;">
 if the key's value to disabled a section is shown empty, then the section is disable by default
 ```
 ```
