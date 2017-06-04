@@ -11,7 +11,8 @@ bash, perl and python and now I'm planning to re-write all these in Go and
 make them public
 
 The reason of my choice for Go, is simple, I wanted a single binary and able
-to use a single configuration file
+to use a single configuration file. A side effect is you could use this code
+as a nagios-plugin framework without to have re-investing the wheel :)
 
 ### Single configuration
 An other thing was configure the flags in a single file, my choice is yaml. The reason
@@ -32,6 +33,8 @@ check-momo:
 ```
 
 Here are the shared configurarion:
+seems like a lot, but you should only need to configure these once, or disable some of the
+feature such as syslog, email, pagerdurty and slack. 
 
 ```
 	# Optional add these values in the common section.
@@ -125,5 +128,8 @@ with xxxx the name of the check
 
 that's it
 
+
+### Feedback
+Feedback and bug report welcome...
 
 Enjoy, Momo
