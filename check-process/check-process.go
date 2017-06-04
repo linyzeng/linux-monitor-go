@@ -1,4 +1,4 @@
-// Copyright (c) 2014 - 2017 badassops
+// Copyright (c) 2017 - 2017 badassops
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,28 +25,30 @@
 //
 // Version		:	0.1
 //
-// Date			:
+// Date			:	June 4, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	Mar 3, 2014		LIS			First release
-//					LIS			Convert from bash/python/perl to Go
+//	June 4, 2017	LIS			First Go release
 //
 // TODO:
 
+
 package main
 
-import (
-	"fmt"
-	"os"
-	"time"
-
-	myInit		"github.com/my10c/nagios-plugins-go/initialize"
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	myMySQL		"github.com/my10c/nagios-plugins-go/mysql"
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
-)
+//import (
+//	"fmt"
+//	"os"
+//	"time"
+//
+//	myInit		"github.com/my10c/nagios-plugins-go/initialize"
+//	myUtils		"github.com/my10c/nagios-plugins-go/utils"
+//	myMySQL		"github.com/my10c/nagios-plugins-go/mysql"
+//	myGlobal	"github.com/my10c/nagios-plugins-go/global"
+//	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
+//)
 
 func main() {
+	return 
 }
+

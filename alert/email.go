@@ -1,4 +1,4 @@
-// Copyright (c) 2014 - 2017 badassops
+// Copyright (c) 2017 - 2017 badassops
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,13 +25,13 @@
 //
 // Version		:	0.1
 //
-// Date			:	June 2, 2017
+// Date			:	June 4, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	June 2, 2017	LIS			First release
+//	June 4, 2017	LIS			First Go release
 //
-// TODO: process error
+// TODO:
 
 package alerts
 

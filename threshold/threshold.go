@@ -1,4 +1,4 @@
-// Copyright (c) 2014 - 2017 badassops
+// Copyright (c) 2017 - 2017 badassops
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,15 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Version		:	0.2
+// Version		:	0.1
 //
-// Date			:	May 18, 2017
+// Date			:	June 4, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	Mar 3, 2014		LIS			First release
-//	May 18, 2017	LIS			Convert from bash/python/perl to Go
+//	June 4, 2017	LIS			First Go release
 //
+// TODO:
 
 package threshold
 
@@ -51,7 +51,7 @@ var (
 	critThreshold int
 )
 
-// Function to check that the threshold are correct
+// Function to check that the configured thresholds are correct
 func SanityCheck(warning string, critical string) (int, int, bool){
 	if  strings.HasSuffix(warning, "%") {
 		percent = true

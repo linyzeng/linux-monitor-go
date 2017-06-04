@@ -1,4 +1,4 @@
-// Copyright (c) 2014 - 2017 badassops
+// Copyright (c) 2017 - 2017 badassops
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,15 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Version		:	0.2
+// Version		:	0.1
 //
-// Date			:	May 18, 2017
+// Date			:	June 4, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	Mar 3, 2014		LIS			First release
-//	May 18, 2017	LIS			Convert from bash/python/perl to Go
+//	June 4, 2017	LIS			First Go release
 //
+// TODO:
 
 package initialize
 
@@ -91,6 +91,7 @@ func getYamlValue(yamFile *simpleyaml.Yaml, section string, key string) (string,
 	if value, err := yamFile.Get(section).Get(key).Bool(); err == nil {
 		return strconv.FormatBool(value), err
 	}
+	// we got here so this is neither a string, int or boolean
 	err := fmt.Errorf("Unsupported value for section %s and key %s, suported are: string, int and bool\n", section, key)
 	myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
 	return "", err
@@ -189,7 +190,7 @@ func InitLog() {
 		// create directory
 		err := os.MkdirAll(myGlobal.DefaultLog["logdir"], 0755) 
 		if err != nil {
-			fmt.Printf("Unable to create Log directory, logs are send to console!\n")
+			fmt.Printf("Unable to create the Log directory, logs are send to console!\n")
 			myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
 			return
 		}

@@ -1,4 +1,4 @@
-// Copyright (c) 2014 - 2017 badassops
+// Copyright (c) 2017 - 2017 badassops
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,13 +25,13 @@
 //
 // Version		:	0.1
 //
-// Date			:	May 18, 2017
+// Date			:	June 4, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	Mar 3, 2014		LIS			First release
-//	May 18, 2017	LIS			Convert from bash/python/perl to Go
+//	June 4, 2017	LIS			First Go release
 //
+// TODO:
 
 package mysql
 
@@ -68,6 +68,7 @@ func New(mysqlCfg map[string]string) *dbMysql {
 	return &dbMysql{db}
 }
 
+// Function to check write == insert
 func (db *dbMysql) CheckWrite(table string, field string, data string) error {
 	// Prepare statement for inserting data
 	stmt, err := db.Prepare(fmt.Sprintf("INSERT INTO %s (%s) VALUE ('%s')", table, field, data))
@@ -78,6 +79,7 @@ func (db *dbMysql) CheckWrite(table string, field string, data string) error {
 	return err
 }
 
+// Function to check read == select
 func (db *dbMysql) CheckRead(table string, field string, data string) error {
 	// Prepare statement for reading the data
 	stmt, err := db.Prepare(fmt.Sprintf("SELECT * FROM %s WHERE %s = '%s'", table, field, data))
@@ -88,6 +90,7 @@ func (db *dbMysql) CheckRead(table string, field string, data string) error {
 	return err
 }
 
+// Function to check delete == delete
 func (db *dbMysql) CheckDelete(table string, field string, data string) error {
 	// Prepare statement for delete the data
 	stmt, err := db.Prepare(fmt.Sprintf("DELETE FROM %s WHERE %s = '%s'", table, field, data))
@@ -98,6 +101,7 @@ func (db *dbMysql) CheckDelete(table string, field string, data string) error {
 	return err
 }
 
+// Function on of the check the table space, can we create?
 func (db *dbMysql) CreateTable(table string) error {
 	// Prepare statement to create a table
 	stmt, err := db.Prepare(fmt.Sprintf("CREATE TABLE %s (timestamp varchar(128))", table))
@@ -108,6 +112,7 @@ func (db *dbMysql) CreateTable(table string) error {
 	return err
 }
 
+// Function on of the check the table space, can we delete?
 func (db *dbMysql) DropTable(table string) error {
 	// Prepare statement to drop a table
 	stmt, err := db.Prepare(fmt.Sprintf("DROP TABLE %s", table))

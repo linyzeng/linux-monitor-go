@@ -33,37 +33,35 @@
 //
 // TODO:
 
-package  alerts
+package stats
 
 import (
 	"fmt"
-	"strings"
+	"os"
 
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 
-	"github.com/nlopes/slack"
 )
 
-// Function to post an alert in slack
-func alertSlack(message string) error {
-	slackAPI := slack.New(myGlobal.DefaultSlack["slackservicekey"])
-	slackMsg := fmt.Sprintf(":imp: `- %s error: %s` :disappointed:\n", myGlobal.MyProgname, message)
-	// remove all carriage return
-	slackMsg = strings.TrimSuffix(strings.Replace(slackMsg, "\n", " - ", -1), " - ")
-	// need to build a minimum config, the user profile
-	slackUserProfile := slack.PostMessageParameters{
-		Username:		myGlobal.DefaultSlack["slackuser"],
-		AsUser:			false,
-		Parse:			"",
-		LinkNames:		0,
-		Attachments:	nil,
-		UnfurlLinks:	false,
-		UnfurlMedia:	true,
-		IconURL:		"",
-		IconEmoji:		myGlobal.DefaultSlack["iconemoji"],
-		Markdown:		true,
-		EscapeText:		true,
+var  Stats {
+}
+
+// Function to initialize the stats directoty and the stats file
+func New() error {
+	// only if stats was enable and both statsdir and statsfiel were set
+	if myGlobal.DefaultValues["stats"] == "false" ||
+		len(myGlobal.DefaultValues["statsdir"]) == 0 ||
+		len(myGlobal.DefaultValues["statsfile"]) == 0 {
+		return nil
 	}
-	_, _, err := slackAPI.PostMessage(myGlobal.DefaultSlack["slackchannel"], slackMsg, slackUserProfile)
-	return err
+	// create the directory
+	err := os.MkdirAll(myGlobal.DefaultLog["logdir"], 0755)
+	if err != nil {
+		fmt.Printf("Unable to create stats directory, stats has been disabled.\n")
+		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
+		myGlobal.DefaultValues["stats"] = "false"
+		return err
+	}
+	return nil
 }

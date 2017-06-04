@@ -1,4 +1,4 @@
-// Copyright (c) 2014 - 2017 badassops
+// Copyright (c) 2017 - 2017 badassops
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,14 +25,14 @@
 //
 // Version		:	0.1
 //
-// Date			:
+// Date			:	June 4, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	Mar 3, 2014		LIS			First release
-//					LIS			Convert from bash/python/perl to Go
+//	June 4, 2017	LIS			First Go release
 //
 // TODO:
+
 
 package main
 

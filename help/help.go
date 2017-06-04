@@ -1,4 +1,4 @@
-// Copyright (c) 2014 - 2017 badassops
+// Copyright (c) 2017 - 2017 badassops
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,15 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Version		:	0.2
+// Version		:	0.1
 //
-// Date			:	May 18, 2017
+// Date			:	June 4, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	Mar 3, 2014		LIS			First release
-//	May 18, 2017	LIS			Convert from bash/python/perl to Go
+//	June 4, 2017	LIS			First Go release
 //
+// TODO:
 
 package help
 
@@ -46,7 +46,7 @@ import (
 	"github.com/fatih/color"
 )
 
-// Function to print a list of configurable values
+// Function to print a list of configurable keys and their default values if any
 func printCfgValues(sectioName string, disableKey string, cfgDict map[string]string) {
 	if len(disableKey) > 0 {
 		if strings.Contains(disableKey, ":") {
@@ -61,7 +61,7 @@ func printCfgValues(sectioName string, disableKey string, cfgDict map[string]str
 	}
 }
 
-// Function to show how to setup the aws credentials and the simple-aws-lb config
+// Function to show how to setup the check
 func SetupHelp(cfg []string) {
 	fmt.Printf("%s", myGlobal.MyInfo)
 	fmt.Printf("Setup the configuration file:\n")
@@ -129,7 +129,7 @@ func Help(exitVal int) {
 	fmt.Printf("\t*config: the configuration file to use, should be full path, use --setup for more information.\n")
 	fmt.Printf("\t*check: mode, this is defined per check, use 'mode help' to see valid modes.\n")
 	fmt.Printf("\tnoalert: do not send alert.\n")
-	fmt.Printf("\tnostats: do not create stats.\n")
+	fmt.Printf("\tstats: create the stats.\n")
 	fmt.Printf("\tsetup: show the setup guide.\n")
 	fmt.Printf("\tversion: print %s version.\n", myGlobal.MyProgname)
 	fmt.Printf("\thelp: short version of this help page.\n")

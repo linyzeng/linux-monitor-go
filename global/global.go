@@ -1,4 +1,4 @@
-// Copyright (c) 2014 - 2017 badassops
+// Copyright (c) 2017 - 2017 badassops
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,16 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Version		:	0.3
+// Version		:	0.1
 //
-// Date			:	June 1, 2017
+// Date			:	June 4, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	Mar 3, 2014		LIS			First release
-//	May 18, 2017	LIS			Convert from bash/python/perl to Go
-//	June 1, 2017	LIS			Added defaults for syslog, pagerduty, slack and email
+//	June 4, 2017	LIS			First Go release
 //
+// TODO:
 
 package global
 
@@ -140,7 +139,7 @@ var (
 
 	// stats are always optional but has a default value. so this is hardcoded!
 	DefaultStats			map[string]string
-	OptionalKeys = []string{"statsdir", "statsfile"}
+	OptionalKeys			= []string{"statsdir", "statsfile"}
 	DefaultStatsDir			= DefaultLogsDir
 	DefaultStatsFile		= fmt.Sprintf("%s", MyProgname)
 )
