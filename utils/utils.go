@@ -243,8 +243,6 @@ func ShowMap(cfgDict map[string]string) {
 		showSectionValue("common", myGlobal.DefaultValues)
 		// display the log values
 		showSectionValue("log", myGlobal.DefaultLog)
-		// display the stats values
-		showSectionValue("stats", myGlobal.DefaultStats)
 		// display the email values
 		showSectionValue("email", myGlobal.DefaultEmail)
 		// display the tag values

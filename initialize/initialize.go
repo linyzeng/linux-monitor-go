@@ -120,13 +120,6 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 			myGlobal.DefaultLog[defaultLog] = newValue
 		}
 	}
-	// for stats
-	for defaultStats, _ := range myGlobal.DefaultStats {
-		if newValue, err := getYamlValue(yamlFile, "stats", defaultStats); err == nil {
-			// replace the default value
-			myGlobal.DefaultStats[defaultStats] = newValue
-		}
-	}
 	// for tag
 	for defaultTag, _ := range myGlobal.DefaultTag {
 		if newValue, err := getYamlValue(yamlFile, "tag", defaultTag); err == nil {
@@ -163,6 +156,11 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		}
 	}
 	// set the config value
+	// we set first the stats default values so is then can be overwritten
+	for cnt := range myGlobal.OptionalKeys {
+		keyName := myGlobal.OptionalKeys[cnt]
+		dictCfg[keyName] = myGlobal.DefaultStats[keyName]
+	}
 	for cnt := range cfgList {
 		keyName := cfgList[cnt]
 		if cfgValue, err := getYamlValue(yamlFile, myGlobal.MyProgname, keyName); err == nil {

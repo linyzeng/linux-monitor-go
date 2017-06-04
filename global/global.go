@@ -81,30 +81,25 @@ var (
 	ExtraInfo		string
 
 	// defaults
-	DefaultValues		= make(map[string]string)
+	DefaultValues		map[string]string
 	DefaultConfDir		= "/etc/nagios-plugins-go"
 	DefaultConfigFile	= fmt.Sprintf("%s/nagios-plugins-go.yaml", DefaultConfDir)
 	// alert, stats logging and debuging mode
-	DefaultNoAlert			= "false"
-	DefaultCreateStats		= "false"
-	DefaultNoLog			= "false"
-	DefaultDebug			= "false"
+	DefaultNoAlert		= "false"
+	DefaultCreateStats	= "false"
+	DefaultNoLog		= "false"
+	DefaultDebug		= "false"
 
 	// for logging
-	DefaultLog				= make(map[string]string)
+	DefaultLog				map[string]string
 	DefaultLogsDir			= "/var/log/nagios-plugins-go"
 	DefaultLogFile			= fmt.Sprintf("%s.log", MyProgname)
 	DefaultLogMaxSize		= 128	// megabytes
-	DefaultLogMaxBackups	= 3		// 3 files
-	DefaultLogMaxAge		= 10	// days
-
-	// for stats
-	DefaultStats			= make(map[string]string)
-	DefaultLogStatsDir		= "/var/log/nagios-plugins-go-stats"
-	DefaultLogStatsFile		= fmt.Sprintf("%s.stats", MyProgname)
+	DefaultLogMaxBackups	= 14	// 14 files
+	DefaultLogMaxAge		= 14	// 14 days
 
 	// email
-	DefaultEmail				= make(map[string]string)
+	DefaultEmail				map[string]string
 	DefaultEmailFrom			= ""
 	DefaultEmailFromName		= ""
 	DefaultEmailTo				= ""
@@ -116,25 +111,25 @@ var (
 	DefaultEmailHostSubjectTag	= "[MONITOR]"
 
 	// tag
-	DefaultTag					= make(map[string]string)
+	DefaultTag					map[string]string
 	DefaultTagfile				= ""
 	DefaultTagKey				= ""
 
 	// syslog
-	DefaultSyslog			= make(map[string]string)
+	DefaultSyslog			map[string]string
 	DefaultSyslogTag		= fmt.Sprintf("[%s]", MyProgname)
 	DefaultSyslogPriority	= "LOG_INFO"
 	DefaultSyslogFacility	= "LOG_SYSLOG"
 
 	// pagerdutry
-	DefaultPD				= make(map[string]string)
+	DefaultPD				map[string]string
 	DefaultPDServiceKey		= ""
 	DefaultPDServiceName	= ""
 	DefaultPDValidUnit		= "hour"
 	DefaultPDEvent			= "MONITOR ALERT"
 
 	// slack
-	DefaultSlack			= make(map[string]string)
+	DefaultSlack			map[string]string
 	DefaultSlackServiceKey	= ""
 	DefaultSlackChannel		= ""
 	DefaultSlackUser		= "MONITOR"
@@ -142,6 +137,12 @@ var (
 
 	// result wording
     Result = []string{ "OK", "WARNING", "CRITICAL", "UNKNOWN" }
+
+	// stats are always optional but has a default value. so this is hardcoded!
+	DefaultStats			map[string]string
+	OptionalKeys = []string{"statsdir", "statsfile"}
+	DefaultStatsDir			= DefaultLogsDir
+	DefaultStatsFile		= fmt.Sprintf("%s", MyProgname)
 )
 
 func init() {
@@ -160,10 +161,6 @@ func init() {
 	DefaultLog["logmaxsize"]			=	strconv.Itoa(DefaultLogMaxSize)
 	DefaultLog["logmaxbackups"]			=	strconv.Itoa(DefaultLogMaxBackups)
 	DefaultLog["logmaxage"]				=	strconv.Itoa(DefaultLogMaxAge)
-	// for stats
-	DefaultStats = make(map[string]string)
-	DefaultStats["statsdir"]			=	DefaultLogStatsDir
-	DefaultStats["statsfile"]			=	DefaultLogStatsFile
 	// for email
 	DefaultEmail = make(map[string]string)
 	DefaultEmail["emailfrom"]			=	DefaultEmailFrom
@@ -186,14 +183,18 @@ func init() {
 	DefaultSyslog["syslogfacility"]		=	DefaultSyslogFacility
 	// for pagerduty
 	DefaultPD = make(map[string]string)
-	DefaultPD["pdservicekey"]		=	DefaultPDServiceKey
-	DefaultPD["pdservicename"]		=	DefaultPDServiceName
-	DefaultPD["pdvalidunit"]		=	DefaultPDValidUnit
-	DefaultPD["pdevent"]			=	DefaultPDEvent
+	DefaultPD["pdservicekey"]			=	DefaultPDServiceKey
+	DefaultPD["pdservicename"]			=	DefaultPDServiceName
+	DefaultPD["pdvalidunit"]			=	DefaultPDValidUnit
+	DefaultPD["pdevent"]				=	DefaultPDEvent
 	// for slack
 	DefaultSlack = make(map[string]string)
-	DefaultSlack["slackservicekey"]	=	DefaultSlackServiceKey
-	DefaultSlack["slackchannel"]	=	DefaultSlackChannel
-	DefaultSlack["slackuser"]		=	DefaultSlackUser
-	DefaultSlack["iconemoji"]		=	DefaultSlackIconEmoji
+	DefaultSlack["slackservicekey"]		=	DefaultSlackServiceKey
+	DefaultSlack["slackchannel"]		=	DefaultSlackChannel
+	DefaultSlack["slackuser"]			=	DefaultSlackUser
+	DefaultSlack["iconemoji"]			=	DefaultSlackIconEmoji
+	// for stat
+	DefaultStats = make(map[string]string)
+	DefaultStats["statsdir"]			=	DefaultStatsDir
+	DefaultStats["statsfile"]			=	DefaultStatsFile
 }

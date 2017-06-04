@@ -64,15 +64,19 @@ var (
 	exitVal int = 0
 )
 
-func wrongMode() {
+func wrongMode(modeSelect string) {
 	fmt.Printf("%s", myGlobal.MyInfo)
-	fmt.Printf("Wrong mode, supported mode:\n")
-	fmt.Printf("\t basic       : check select/insert/delete\n")
-	fmt.Printf("\t readonly    : check select\n")
-	fmt.Printf("\t slavestatus : check if slave is running\n")
-	fmt.Printf("\t slavelag    : check slave lag, requires the configs: lagwarning and lagcritical.\n")
-	fmt.Printf("\t process     : check process count, requires the configs: processwarning and processcritical.\n")
-	fmt.Printf("\t dropcreate  : check drop and create tables, requires the config: tablename.\n")
+	if  modeSelect == "help" {
+		fmt.Printf("Supported modes\n")
+	} else {
+		fmt.Printf("Wrong mode, supported modes:\n")
+	}
+	fmt.Printf("\t basic       : checks select/insert/delete.\n")
+	fmt.Printf("\t readonly    : checks select.\n")
+	fmt.Printf("\t slavestatus : checks if slave is running.\n")
+	fmt.Printf("\t slavelag    : checks slave lag, requires the configs: `lagwarning` and `lagcritical`.\n")
+	fmt.Printf("\t process     : checks the processes count, requires the configs: `processwarning` and `processcritical`.\n")
+	fmt.Printf("\t dropcreate  : checks drop and create tables, requires the config: `tablename`.\n")
 	fmt.Printf("\t showconfig  : show the current configuration and then exit.\n")
 	os.Exit(3)
 }
@@ -123,7 +127,7 @@ func main() {
 			myUtils.ShowMap(nil)
 			os.Exit(0)
 		default:
-			wrongMode()
+			wrongMode(checkMode)
 	}
 	if exitVal != myGlobal.OK {
 		if myGlobal.DefaultValues["noalert"]  == "false" {
