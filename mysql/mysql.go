@@ -247,3 +247,13 @@ func (db *dbMysql) DropCreateCheck(tablename string) (int, error) {
 	err := fmt.Errorf("Passed, create and drop table %s", tablename)
 	return myGlobal.OK, err
 }
+
+// read check
+func (db *dbMysql) ReadCheck(table string, field string)  (int, error) {
+	if err := db.CheckRead(table, field, "%"); err != nil {
+		db.Close()
+		return myGlobal.CRITICAL, err
+	}
+	err := fmt.Errorf("Passed, SELECT")
+	return myGlobal.OK, err
+}

@@ -66,6 +66,7 @@ func wrongMode() {
 	fmt.Printf("%s", myGlobal.MyInfo)
 	fmt.Printf("Wrong mode, supported mode:\n")
 	fmt.Printf("\t basic       : check select/insert/delete\n")
+	fmt.Printf("\t readonly    : check select\n")
 	fmt.Printf("\t slavestatus : check if slave is running\n")
 	fmt.Printf("\t slavelag    : check slave lag, requires the configs: lagwarning and lagcritical.\n")
 	fmt.Printf("\t process     : check process count, requires the configs: processwarning and processcritical.\n")
@@ -96,6 +97,8 @@ func main() {
 	switch checkMode {
 		case "basic":
 			exitVal, err = dbCheck.BasisCheck(table, field, data)
+		case "readonly":
+			exitVal, err = dbCheck.ReadCheck(table, field)
 		case "slavestatus":
 			exitVal, err = dbCheck.SlaveStatusCheck()
 		case "slavelag":
