@@ -80,6 +80,9 @@ func SetupHelp(cfg []string) {
 	printCfgValues("pagerduty", "pdservicekey", myGlobal.DefaultPD)
 	printCfgValues("slack", "slackservicekey", myGlobal.DefaultSlack)
 	fmt.Printf("\nNOTE\n")
+	if len(myGlobal.ExtraInfo) > 0 {
+		fmt.Printf("%s\n", myGlobal.ExtraInfo)
+	}
 	fmt.Printf("\t* The key must be all lowercase!\n")
 	fmt.Printf("\t* Any key value that contains any of these charaters: ':#[]()*' must be double quoted!\n")
 	fmt.Printf("\t* tagfile and tagkeyname are use to get the tag info by looking for the key `tagkeyname` in the\n")

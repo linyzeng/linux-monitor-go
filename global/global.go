@@ -74,6 +74,9 @@ var (
 	Logfile			string
 	ConfFile		string
 
+	// special for addtional setup
+	ExtraInfo		string
+
 	// defaults
 	DefaultValues		= make(map[string]string)
 	DefaultConfDir		= "/etc/nagios-plugins-go"
@@ -139,6 +142,7 @@ var (
 
 func init() {
 	// setup the default value, these are hardcoded.
+	ExtraInfo = ""
 	// the common section
 	DefaultValues = make(map[string]string)
 	DefaultValues["noalert"]			=	DefaultNoAlert

@@ -54,6 +54,7 @@ import (
 const (
 	table = "MONITOR"
 	field = "timestamp"
+	ExtraInfo = "Requires the table to have a field named `timestamp` and format `varchar(128)`"
 )
 
 var (
@@ -80,6 +81,8 @@ func main() {
 	myUtils.IsRoot()
 	var thresHold string = ""
 	var exitMsg string
+	// add the extra setup info
+	myGlobal.ExtraInfo = ExtraInfo
 	cfgFile, checkMode := myInit.InitArgs(cfgRequired)
 	switch checkMode {
 		case "slavelag":
