@@ -16,20 +16,19 @@ as a nagios-plugin framework without to have re-investing the wheel :)
 
 ### Single configuration
 An other thing was configure the flags in a single file, my choice is yaml. The reason
-is very simple, is easy to read and to create. Given the flag `--setup`, the check will 
-show you what available configuration such as threshlold name that are available.
-Other flags option can be query with `help`, example `--mode help` to show valid modes
-options.
+is very simple, is easy to read and to create. Given the flag `-setup`, the check will 
+show you what are the available configurations such as threshlold name that are available.
+Some flags can be query with `help`, example `-mode help` to show valid modes and per
 
 For each check create a section `check-name:` and under the configs, such as threshold.
 example
 
 ```
-check-momo:
-  user: momo
-  password: momo
-  warning: 10%
-  critical: 5%
+	check-momo:
+	  user: momo
+	  password: momo
+	  warning: 10%
+	  critical: 5%
 ```
 
 Here are the shared configurarion:
