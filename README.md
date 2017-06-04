@@ -1,7 +1,7 @@
 
 # See check for their release status
-# CURRENT : working on logging
-# NEXT    : stats
+# CURRENT : working on stats
+# NEXT    : check-disk
 
 ## nagios-plugins-go : Nagios plugins written in GO
 
