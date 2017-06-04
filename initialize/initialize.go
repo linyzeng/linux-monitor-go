@@ -112,6 +112,34 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 			myGlobal.DefaultValues[defaultKey] = newValue
 		}
 	}
+	// for log
+	for defaultLog, _ := range myGlobal.DefaultLog {
+		if newValue, err := getYamlValue(yamlFile, "log", defaultLog); err == nil {
+			// replace the default value
+			myGlobal.DefaultLog[defaultLog] = newValue
+		}
+	}
+	// for stats
+	for defaultStats, _ := range myGlobal.DefaultStats {
+		if newValue, err := getYamlValue(yamlFile, "stats", defaultStats); err == nil {
+			// replace the default value
+			myGlobal.DefaultStats[defaultStats] = newValue
+		}
+	}
+	// for tag
+	for defaultTag, _ := range myGlobal.DefaultTag {
+		if newValue, err := getYamlValue(yamlFile, "tag", defaultTag); err == nil {
+			// replace the default value
+			myGlobal.DefaultTag[defaultTag] = newValue
+		}
+	}
+	// for email
+	for defaultEmail, _ := range myGlobal.DefaultEmail {
+		if newValue, err := getYamlValue(yamlFile, "email", defaultEmail); err == nil {
+			// replace the default value
+			myGlobal.DefaultEmail[defaultEmail] = newValue
+		}
+	}
 	// for Syslog
 	for defaultSyslog, _ := range myGlobal.DefaultSyslog {
 		if newValue, err := getYamlValue(yamlFile, "syslog", defaultSyslog); err == nil {
@@ -153,16 +181,18 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 
 // Function to initialize logging
 func InitLog(logSettings map[string]string) {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	MaxSize, _		:= strconv.Atoi(logSettings["logmaxsize"])
-	MaxBackups, _	:= strconv.Atoi(logSettings["logmaxbackups"])
-	MaxAge, _		:= strconv.Atoi(logSettings["logmaxage"])
-	log.SetOutput(&lumberjack.Logger{
-		Filename:	logSettings["logfile"],
-		MaxSize:	MaxSize,
-		MaxBackups:	MaxBackups,
-		MaxAge:		MaxAge,
-	})
+	if len(logSettings["logfile"]) > 0 {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+		MaxSize, _		:= strconv.Atoi(logSettings["logmaxsize"])
+		MaxBackups, _	:= strconv.Atoi(logSettings["logmaxbackups"])
+		MaxAge, _		:= strconv.Atoi(logSettings["logmaxage"])
+		log.SetOutput(&lumberjack.Logger{
+			Filename:	logSettings["logfile"],
+			MaxSize:	MaxSize,
+			MaxBackups:	MaxBackups,
+			MaxAge:		MaxAge,
+		})
+	}
 }
 
 // Function to process the given args

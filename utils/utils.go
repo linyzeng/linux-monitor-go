@@ -215,36 +215,40 @@ func IsLinuxSystem() {
 	return
 }
 
+// Function print helper to show config value
+func showSectionValue(section string, sectionDict map[string]string) {
+	fmt.Printf("%s:\n", section)
+	for mapKey, mapValue := range sectionDict  {
+		fmt.Printf("\t%s: %s\n", mapKey, mapValue)
+	}
+	return
+}
+
 // Function to show a map entry, key and value and displayed in yaml
 func ShowMap(cfgDict map[string]string) {
 	if cfgDict == nil {
-		// display the defaults values
-		fmt.Printf("common:\n")
-		for mapKey, mapValue := range myGlobal.DefaultValues {
-			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
-		}
+		// display the common values
+		showSectionValue("common", myGlobal.DefaultValues)
+		// display the log values
+		showSectionValue("log", myGlobal.DefaultLog)
+		// display the stats values
+		showSectionValue("stats", myGlobal.DefaultStats)
+		// display the email values
+		showSectionValue("email", myGlobal.DefaultEmail)
+		// display the tag values
+		showSectionValue("tag", myGlobal.DefaultTag)
+		// display the syslog values
+		showSectionValue("syslog", myGlobal.DefaultSyslog)
 		// display the pagerduty values
-		fmt.Printf("syslog:\n")
-		for mapKey, mapValue := range myGlobal.DefaultSyslog {
-			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
-		}
-		// display the pagerduty values
-		fmt.Printf("pagerduty:\n")
-		for mapKey, mapValue := range myGlobal.DefaultPD {
-			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
-		}
+		showSectionValue("pagerduty", myGlobal.DefaultPD)
 		// display the slack values
-		fmt.Printf("slack:\n")
-		for mapKey, mapValue := range myGlobal.DefaultSlack {
-			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
-		}
+		showSectionValue("slack", myGlobal.DefaultSlack)
 	}
 	if cfgDict != nil {
 		fmt.Printf("%s:\n", myGlobal.MyProgname)
 		for mapKey, mapValue := range cfgDict {
 			fmt.Printf("\t%s: %s\n", mapKey, mapValue)
 		}
-		// display the pagerduty values
 	}
 	return
 }

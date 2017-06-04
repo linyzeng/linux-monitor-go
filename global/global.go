@@ -74,32 +74,30 @@ var (
 	Logfile			string
 	ConfFile		string
 
-	// require configuration keys
-	RequiredKeys		[]string
-	BabyshipKeys		[]string
-	ServerKeys			[]string
-	DirectoriesKeys		[]string
-	LoggingKeys			[]string
-	DirectoryKeys		[]string
-	DefaultValues		map[string]string
-
 	// defaults
+	DefaultValues		= make(map[string]string)
 	DefaultConfDir		= "/etc/nagios-plugins-go"
-	DefaultLogsDir		= "/var/log/nagios-plugins-go"
 	DefaultConfigFile	= fmt.Sprintf("%s/nagios-plugins-go.yaml", DefaultConfDir)
+	// alert, logging and debuging mode
+	DefaultNoAlert			= "false"
+	DefaultNoLog			= "false"
+	DefaultDebug			= "false"
 
 	// for logging
-	DefaultLogFile			= fmt.Sprintf("%s/%s.log", DefaultLogsDir, MyProgname)
+	DefaultLog				= make(map[string]string)
+	DefaultLogsDir			= "/var/log/nagios-plugins-go"
+	DefaultLogFile			= fmt.Sprintf("%s.log", MyProgname)
 	DefaultLogMaxSize		= 128	// megabytes
 	DefaultLogMaxBackups	= 3		// 3 files
 	DefaultLogMaxAge		= 10	// days
 
-	// alert, logging and debuging mode
-	DefaultNoAlert		= "false"
-	DefaultNoLog		= "false"
-	DefaultDebug		= "false"
+	// for stats
+	DefaultStats			= make(map[string]string)
+	DefaultLogStatsDir		= "/var/log/nagios-plugins-go-stats"
+	DefaultLogStatsFile		= fmt.Sprintf("%s.stats", MyProgname)
 
 	// email
+	DefaultEmail				= make(map[string]string)
 	DefaultEmailFrom			= ""
 	DefaultEmailFromName		= ""
 	DefaultEmailTo				= ""
@@ -110,21 +108,26 @@ var (
 	DefaultEmailHostPort		= 25
 	DefaultEmailHostSubjectTag	= "[MONITOR]"
 
+	// tag
+	DefaultTag					= make(map[string]string)
+	DefaultTagfile				= ""
+	DefaultTagKey				= ""
+
 	// syslog
-	DefaultSyslog			map[string]string
+	DefaultSyslog			= make(map[string]string)
 	DefaultSyslogTag		= fmt.Sprintf("[%s]", MyProgname)
 	DefaultSyslogPriority	= "LOG_INFO"
 	DefaultSyslogFacility	= "LOG_SYSLOG"
 
 	// pagerdutry
-	DefaultPD				map[string]string
+	DefaultPD				= make(map[string]string)
 	DefaultPDServiceKey		= ""
 	DefaultPDServiceName	= ""
 	DefaultPDValidUnit		= "hour"
 	DefaultPDEvent			= "MONITOR ALERT"
 
 	// slack
-	DefaultSlack			map[string]string
+	DefaultSlack			= make(map[string]string)
 	DefaultSlackServiceKey	= ""
 	DefaultSlackChannel		= ""
 	DefaultSlackUser		= "MONITOR"
@@ -141,23 +144,32 @@ func init() {
 	DefaultValues["noalert"]			=	DefaultNoAlert
 	DefaultValues["nolog"]				=	DefaultNoLog
 	DefaultValues["debug"]				=	DefaultDebug
-	DefaultValues["logdir"]				=	DefaultLogsDir
-	DefaultValues["logfile"]			=	DefaultLogFile
-	DefaultValues["logmaxsize"]			=	strconv.Itoa(DefaultLogMaxSize)
-	DefaultValues["logmaxbackups"]		=	strconv.Itoa(DefaultLogMaxBackups)
-	DefaultValues["logmaxage"]			=	strconv.Itoa(DefaultLogMaxAge)
-	DefaultValues["emailfrom"]			=	DefaultEmailFrom
-	DefaultValues["emailfromname"]		=	DefaultEmailFromName
-	DefaultValues["emailto"]			=	DefaultEmailTo
-	DefaultValues["emailtoname"]		=	DefaultEmailToName
-	DefaultValues["emailsubjecttag"]	=	DefaultEmailHostSubjectTag
-	DefaultValues["emailuser"]			=	DefaultEmailUser
-	DefaultValues["emailpass"]			=	DefaultEmailpassword
-	DefaultValues["emailhost"]			=	DefaultEmailhost
-	DefaultValues["emailhostport"]		=	strconv.Itoa(DefaultEmailHostPort)
+	// for Log
+	DefaultLog = make(map[string]string)
+	DefaultLog["logdir"]				=	DefaultLogsDir
+	DefaultLog["logfile"]				=	DefaultLogFile
+	DefaultLog["logmaxsize"]			=	strconv.Itoa(DefaultLogMaxSize)
+	DefaultLog["logmaxbackups"]			=	strconv.Itoa(DefaultLogMaxBackups)
+	DefaultLog["logmaxage"]				=	strconv.Itoa(DefaultLogMaxAge)
+	// for stats
+	DefaultStats = make(map[string]string)
+	DefaultStats["statsdir"]			=	DefaultLogStatsDir
+	DefaultStats["statsfile"]			=	DefaultLogStatsFile
+	// for email
+	DefaultEmail = make(map[string]string)
+	DefaultEmail["emailfrom"]			=	DefaultEmailFrom
+	DefaultEmail["emailfromname"]		=	DefaultEmailFromName
+	DefaultEmail["emailto"]				=	DefaultEmailTo
+	DefaultEmail["emailtoname"]			=	DefaultEmailToName
+	DefaultEmail["emailsubjecttag"]		=	DefaultEmailHostSubjectTag
+	DefaultEmail["emailuser"]			=	DefaultEmailUser
+	DefaultEmail["emailpass"]			=	DefaultEmailpassword
+	DefaultEmail["emailhost"]			=	DefaultEmailhost
+	DefaultEmail["emailhostport"]		=	strconv.Itoa(DefaultEmailHostPort)
 	// these are for getting a instance/system tag
-	DefaultValues["tagfile"]			=	""
-	DefaultValues["tagkeyname"]			=	""
+	DefaultTag = make(map[string]string)
+	DefaultTag["tagfile"]				=	DefaultTagfile
+	DefaultTag["tagkeyname"]			=	DefaultTagKey
 	// for syslog
 	DefaultSyslog = make(map[string]string)
 	DefaultSyslog["syslogtag"]			=	DefaultSyslogTag

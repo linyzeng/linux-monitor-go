@@ -48,14 +48,14 @@ func alertEmail(message string, subject string) error {
 	// if authEmail - empty then no authentication is required
 	// for now only support PlainAuth
 	authEmail := smtp.PlainAuth("",
-			myGlobal.DefaultValues["emailuser"],
-			myGlobal.DefaultValues["emailpass"],
-			myGlobal.DefaultValues["emailhost"],
+			myGlobal.DefaultEmail["emailuser"],
+			myGlobal.DefaultEmail["emailpass"],
+			myGlobal.DefaultEmail["emailhost"],
 	)
 	// build the email component
-	emailTo := mail.Address{myGlobal.DefaultValues["emailtoname"], myGlobal.DefaultValues["emailto"]}
-	emailFrom := mail.Address{myGlobal.DefaultValues["emailfromname"], myGlobal.DefaultValues["emailfrom"]}
-	emailHost := fmt.Sprintf("%s:%s", myGlobal.DefaultValues["emailhost"], myGlobal.DefaultValues["emailhostport"])
+	emailTo := mail.Address{myGlobal.DefaultEmail["emailtoname"], myGlobal.DefaultEmail["emailto"]}
+	emailFrom := mail.Address{myGlobal.DefaultEmail["emailfromname"], myGlobal.DefaultEmail["emailfrom"]}
+	emailHost := fmt.Sprintf("%s:%s", myGlobal.DefaultEmail["emailhost"], myGlobal.DefaultEmail["emailhostport"])
 	fromAndBody := fmt.Sprintf("To: %s\r\nSubject: %s\r\n\r\n%s\r\n",
 			emailTo.String(), subject, message)
 	// send the email

@@ -49,12 +49,12 @@ func GetTagInfo() (string, error) {
 	var err error = nil
 
 	// make sure both tagfile and tagkeyname were set
-	if len(myGlobal.DefaultValues["tagfile"]) > 0 &&
-		len(myGlobal.DefaultValues["tagkeyname"]) > 0 {
+	if len(myGlobal.DefaultTag["tagfile"]) > 0 &&
+		len(myGlobal.DefaultTag["tagkeyname"]) > 0 {
 		// open given tag file
-		tagFile, ok := os.Open(myGlobal.DefaultValues["tagfile"])
+		tagFile, ok := os.Open(myGlobal.DefaultTag["tagfile"])
 		if ok != nil {
-			err = fmt.Errorf("Unable to open the tag file %s", myGlobal.DefaultValues["tagfile"])
+			err = fmt.Errorf("Unable to open the tag file %s", myGlobal.DefaultTag["tagfile"])
 			return tagInfo, err
 		}
 		// make sure we closed the file
@@ -63,8 +63,8 @@ func GetTagInfo() (string, error) {
 		scanner := bufio.NewScanner(tagFile)
 		for scanner.Scan() {
 			currLine := scanner.Text()
-			if strings.HasPrefix(currLine, myGlobal.DefaultValues["tagkeyname"]) {
-				tagInfo = strings.TrimPrefix(currLine, myGlobal.DefaultValues["tagkeyname"])
+			if strings.HasPrefix(currLine, myGlobal.DefaultTag["tagkeyname"]) {
+				tagInfo = strings.TrimPrefix(currLine, myGlobal.DefaultTag["tagkeyname"])
 				return strings.TrimSpace(tagInfo), err
 			}
 		}
@@ -72,6 +72,6 @@ func GetTagInfo() (string, error) {
 		err = fmt.Errorf("Missing either tagfile or tagkeyname or both")
 		return tagInfo, err
 	}
-	err = fmt.Errorf("Requested tagkeyname %s not found", myGlobal.DefaultValues["tagkeyname"])
+	err = fmt.Errorf("Requested tagkeyname %s not found", myGlobal.DefaultTag["tagkeyname"])
 	return tagInfo, err
 }

@@ -67,17 +67,16 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 	}
 	// is any of these fails we capture that, hence err could be a ser of errors!
 	// Syslog : only if syslog tag was not set to of
-	if myGlobal.DefaultSyslog["syslogtag"] != "off" &&
-       len(myGlobal.DefaultSyslog["syslogtag"]) > 0 {
+	if myGlobal.DefaultSyslog["syslogtag"] != "off" {
 		result = alertSyslog(message)
 		if result != nil {
 			err = fmt.Errorf("Syslog %s", result.Error())
 		}
 	}
 	// Email : only if emailto is not empty
-	if len(myGlobal.DefaultValues["emailto"]) > 0 {
+	if len(myGlobal.DefaultEmail["emailto"]) > 0 {
 		errSubject := fmt.Sprintf("%s %s: %s : %s ",
-			myGlobal.DefaultValues["emailsubjecttag"], errWord, hostName, myGlobal.MyProgname)
+			myGlobal.DefaultEmail["emailsubjecttag"], errWord, hostName, myGlobal.MyProgname)
 		result = alertEmail(message, errSubject)
 		if result != nil {
 			if err != nil {
@@ -88,9 +87,8 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 			}
 		}
 	}
-	// Pagerduty : only if key and service-name are not empty
-	 if len(myGlobal.DefaultPD["pdservicekey"]) > 0 &&
-		len(myGlobal.DefaultPD["pdservicename"]) > 0 {
+	// Pagerduty : only if key is empty
+	 if len(myGlobal.DefaultPD["pdservicekey"]) > 0 {
 		result = alertPD(message, tagInfo, hostName)
 		if result != nil {
 			if err != nil {
@@ -101,9 +99,8 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 			}
 		}
 	 }
-	// Slack : only if key and channel are not empty
-	if len(myGlobal.DefaultSlack["slackservicekey"]) > 0 &&
-		len(myGlobal.DefaultSlack["slackchannel"]) > 0 {
+	// Slack : only if key is empty {
+	if len(myGlobal.DefaultSlack["slackservicekey"]) > 0 {
 		result = alertSlack(message)
 		if result != nil {
 			if err != nil {

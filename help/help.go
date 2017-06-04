@@ -38,10 +38,26 @@ package help
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 )
+
+// Function to print a list of configurable values
+func printCfgValues(sectioName string, disableKey string, cfgDict map[string]string) {
+	if len(disableKey) > 0 {
+		if strings.Contains(disableKey, ":") {
+			fmt.Printf("\t# to disable set `%s`.\n", disableKey)
+		} else {
+			fmt.Printf("\t# to disable set an empty `%s`.\n", disableKey)
+		}
+	}
+	fmt.Printf("\t%s:\n", sectioName)
+	for defaultKey, defaultValue := range cfgDict {
+		fmt.Printf("\t  %s: %s\n", defaultKey, defaultValue)
+	}
+}
 
 // Function to show how to setup the aws credentials and the simple-aws-lb config
 func SetupHelp(cfg []string) {
@@ -49,37 +65,31 @@ func SetupHelp(cfg []string) {
 	fmt.Printf("Setup the configuration file:\n")
 	fmt.Printf("\t# Create a configuration file, any name would do, as long its in yaml fornmat.\n")
 	fmt.Printf("\t# Default to %s\n", myGlobal.DefaultConfigFile)
-	fmt.Printf("\t# *** Note that the key most be all lowercase! ***\n")
 	fmt.Printf("\t# Add the following key/pair values, these are required:\n")
 	fmt.Printf("%s:\n", myGlobal.MyProgname)
 	for cnt := range cfg {
 		fmt.Printf("  %s:\n", cfg[cnt])
 	}
-	fmt.Printf("\t# Optional add these values in the common section.\n")
-	fmt.Printf("\t# Values shown are the default values. If either emailfrom or emailto is empty then no email will be sent.\n")
-	fmt.Printf("\t# tagfile and tagkeyname are use to get the tag info by looking for the key tagkeyname in the\n")
-	fmt.Printf("\t# configured file tagfile, the format need to be just 'keyname value' nothing fancy!\n")
-	fmt.Printf("common:\n")
-	for defaultKey, defaultValue := range myGlobal.DefaultValues {
-		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
-	}
-	fmt.Printf("\n\t# Syslog support, to disable set tag value to off, syslogtag default to %s,\n", myGlobal.MyProgname)
-	fmt.Printf("syslog:\n")
-	for defaultKey, defaultValue := range myGlobal.DefaultSyslog {
-		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
-	}
-	fmt.Printf("\n\t# Optional for pagerduty support, if any of these keys are empty then pagerduty is not used.\n")
-	fmt.Printf("pagerduty:\n")
-	for defaultKey, defaultValue := range myGlobal.DefaultPD {
-		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
-	}
-	fmt.Printf("\n\t# Optional for slack support, if slackservicekey and/or slackchannel is empty then slack is not used.\n")
-	fmt.Printf("slack:\n")
-	for defaultKey, defaultValue := range myGlobal.DefaultSlack {
-		fmt.Printf("  %s: %s\n", defaultKey, defaultValue)
-	}
-	fmt.Printf("\n\nNOTE\n")
+	fmt.Printf("# Values shown are the default values. Any section can be ommited, it will then use the default values.\n")
+	printCfgValues("common", "", myGlobal.DefaultValues)
+	printCfgValues("log", "logfile", myGlobal.DefaultLog)
+	printCfgValues("stats", "statsfile", myGlobal.DefaultStats)
+	printCfgValues("email", "emailto", myGlobal.DefaultEmail)
+	printCfgValues("tag", "tagfile", myGlobal.DefaultTag)
+	printCfgValues("syslog", "syslogtag: off", myGlobal.DefaultSyslog)
+	printCfgValues("pagerduty", "pdservicekey", myGlobal.DefaultPD)
+	printCfgValues("slack", "slackservicekey", myGlobal.DefaultSlack)
+	fmt.Printf("\nNOTE\n")
+	fmt.Printf("\t* The key most be all lowercase!\n")
 	fmt.Printf("\t* Any key that has any of these charaters: ':#[]()*' in their value must be double quoted!\n") 
+	fmt.Printf("\t* tagfile and tagkeyname are use to get the tag info by looking for the key `tagkeyname` in the\n")
+	fmt.Printf("\t  configured file `tagfile`, the format need to be just 'keyname value' nothing fancy!\n")
+	fmt.Printf("\t* pagerduty `pdvalidunit` is the unit used to create an event-id so no duplicate is created.\n")
+	fmt.Printf("\t  valid choices are hour or minute, so a even create at hour X (or minute X) will result that\n")
+	fmt.Printf("\t  pagerduty will not create a new event, it sees it as an update to the previous event,\n")
+	fmt.Printf("\t  but do realize there always the possiblity that it could overlaps.\n")
+	fmt.Printf("\t  If the `pdvalidunit` is invalid then it defaults to hour, valid options are `hour` and `minute`.\n")
+	fmt.Printf("\t* `emailsubjecttag` is use for email filtering.\n")
 	fmt.Printf("\t* Syslog Valid `syslogpriority`: ")
 	for keyPriority, _ := range myUtils.SyslogPriority {
 		fmt.Printf("%s ", keyPriority)
@@ -96,12 +106,6 @@ func SetupHelp(cfg []string) {
 		}
 	}
 	fmt.Printf("\n")
-	fmt.Printf("\t* pagerduty `pdvalidunit` is the unit used to create an event-id so no duplicate is created.\n")
-	fmt.Printf("\t  valid choices are hour or minute, so a even create at hour X (or minute X) will result that\n")
-	fmt.Printf("\t  pagerduty will not create a new event, it sees it as an update to the previous event,\n")
-	fmt.Printf("\t  but do realize there always the possiblity that it could overlaps.\n")
-	fmt.Printf("\t  If the `pdvalidunit` is invalid then it defaults to hour, valid options are `hour` and `minute`.\n")
-	fmt.Printf("\t  `emailsubjecttag` is use for email filtering.\n")
 	os.Exit(0)
 }
 

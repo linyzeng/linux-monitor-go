@@ -37,56 +37,70 @@ seems like a lot, but you should only need to configure these once, or disable s
 feature such as syslog, email, pagerdurty and slack. 
 
 ```
-	# Optional add these values in the common section.
-	# Values shown are the default values. If either emailfrom or emailto is empty then no email will be sent.
-	# tagfile and tagkeyname are use to get the tag info by looking for the key tagkeyname in the
-	# configured file tagfile, the format need to be just 'keyname value' nothing fancy!
-common:
-  debug: false
-  emailhostport: 25
-  emailhost: localhost
-  emailto:
-  emailtoname:
-  emailfrom:
-  emailfromname:
-  emailuser:
-  emailpass:
-  tagfile:
-  tagkeyname:
-  noalert: false
-  nolog: false
-  logmaxsize: 128
-  logmaxbackups: 3
-  logmaxage: 10
-  logdir: /var/log/nagios-plugins-go
-  logfile: /var/log/nagios-plugins-go/{check name}.log
-
-	# Syslog support, to disable set tag value to off or leave it empty, syslogtag default to check name.
-syslog:
-  syslogtag:
-  syslogfacility: LOG_SYSLOG
-  syslogpriority: LOG_INFO
-
-	# Optional for pagerduty support, if pdservicekey and/or pdservicename is keys are empty then pagerduty is not used.
-pagerduty:
-  pdservicekey:
-  pdservicename:
-  pdservicename: MONITOR
-  pdvalidunit: hour
-  pdevent: [MONITOR]
-
-	# Optional for slack support, if slackservicekey and/or slackchannel is empty then slack is not used.
-slack:
-  slackservicekey:
-  slackchannel:
-  iconemoji: ":bangbang::doge:"
+# Values shown are the default values. Any section can be ommited, it will then use the default values.
+	common:
+	  nolog: false
+	  debug: false
+	  noalert: false
+	# to disable set an empty `logfile`.
+	log:
+	  logdir: /var/log/nagios-plugins-go
+	  logfile: check-mysql.log
+	  logmaxsize: 128
+	  logmaxbackups: 3
+	  logmaxage: 10
+	# to disable set an empty `statsfile`.
+	stats:
+	  statsdir: /var/log/nagios-plugins-go-stats
+	  statsfile: check-mysql.stats
+	# to disable set an empty `emailto`.
+	email:
+	  emailfrom:
+	  emailto:
+	  emailpass:
+	  emailhost: localhost
+	  emailfromname:
+	  emailtoname:
+	  emailsubjecttag: [MONITOR]
+	  emailuser:
+	  emailhostport: 25
+	# to disable set an empty `tagfile`.
+	tag:
+	  tagfile:
+	  tagkeyname:
+	# to disable set `syslogtag: off`.
+	syslog:
+	  syslogtag: [check-mysql]
+	  syslogpriority: LOG_INFO
+	  syslogfacility: LOG_SYSLOG
+	# to disable set an empty `pdservicekey`.
+	pagerduty:
+	  pdservicekey:
+	  pdservicename:
+	  pdvalidunit: hour
+	  pdevent: MONITOR ALERT
+	# to disable set an empty `slackservicekey`.
+	slack:
+	  slackservicekey:
+	  slackchannel:
+	  slackuser: MONITOR
+	  iconemoji: :bangbang:
 
 NOTE
-	* Any key that has any of these charaters: '#[]()*' in their value must be double quoted!
-	* Syslog Valid Priority: LOG_ALERT LOG_CRIT LOG_ERR LOG_NOTICE LOG_INFO LOG_EMERG LOG_WARNING LOG_DEBUG
-	* Syslog Valid Facility: LOG_DAEMON LOG_LPR LOG_CRON LOG_LOCAL1 LOG_LOCAL2 LOG_LOCAL7
-		LOG_SYSLOG LOG_NEWS LOG_LOCAL0 LOG_UUCP LOG_FTP LOG_LOCAL3 LOG_MAIL
-		LOG_AUTH LOG_AUTHPRIV LOG_LOCAL4 LOG_LOCAL5 LOG_LOCAL6
+	* The key most be all lowercase!
+	* Any key that has any of these charaters: ':#[]()*' in their value must be double quoted!
+	* tagfile and tagkeyname are use to get the tag info by looking for the key `tagkeyname` in the
+	  configured file `tagfile`, the format need to be just 'keyname value' nothing fancy!
+	* pagerduty `pdvalidunit` is the unit used to create an event-id so no duplicate is created.
+	  valid choices are hour or minute, so a even create at hour X (or minute X) will result that
+	  pagerduty will not create a new event, it sees it as an update to the previous event,
+	  but do realize there always the possiblity that it could overlaps.
+	  If the `pdvalidunit` is invalid then it defaults to hour, valid options are `hour` and `minute`.
+	* `emailsubjecttag` is use for email filtering.
+	* Syslog Valid `syslogpriority`: LOG_EMERG LOG_CRIT LOG_ERR LOG_WARNING LOG_NOTICE LOG_INFO LOG_DEBUG LOG_ALERT
+	* Syslog Valid `syslogfacility`: LOG_LOCAL3 LOG_LOCAL5 LOG_AUTH LOG_SYSLOG LOG_NEWS LOG_CRON
+		LOG_AUTHPRIV LOG_LOCAL0 LOG_DAEMON LOG_FTP LOG_LOCAL1 LOG_LOCAL2 LOG_LOCAL4
+		LOG_MAIL LOG_LPR LOG_UUCP LOG_LOCAL6 LOG_LOCAL7
 ```
 
 
