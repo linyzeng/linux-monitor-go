@@ -136,6 +136,14 @@ func IsRoot() {
 	}
 }
 
+// Function to log of the nolog was not set to true
+func LogMsg(message string) {
+	if myGlobal.DefaultValues["nolog"] == "true" {
+		return
+	}
+	log.Printf("%s\n", message)
+}
+
 // Function to log any reveived signal
 func SignalHandler() {
 	interrupt := make(chan os.Signal, 1)

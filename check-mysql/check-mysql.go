@@ -23,14 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Version		:	0.1
+// Version		:	0.2
 //
-// Date			:	May 18, 2017
+// Date			:	Jun 4, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
 //	Mar 3, 2014		LIS			First release
 //	May 18, 2017	LIS			Convert from bash/python/perl to Go
+//	June 4, 2017	LIS			release production ready
 //
 // TODO:
 
@@ -38,7 +39,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -54,7 +54,8 @@ import (
 const (
 	table = "MONITOR"
 	field = "timestamp"
-	ExtraInfo = "Requires the table to have a field named `timestamp` and format `varchar(128)`"
+	extraInfo = "Requires the table to have a field named `timestamp` and format `varchar(128)`"
+	CheckVersion = "0.2"
 )
 
 var (
@@ -78,11 +79,12 @@ func wrongMode() {
 
 func main() {
 	// need to be root since the config file wil have passwords
-	myUtils.IsRoot()
+	//myUtils.IsRoot()
 	var thresHold string = ""
 	var exitMsg string
 	// add the extra setup info
-	myGlobal.ExtraInfo = ExtraInfo
+	myGlobal.ExtraInfo = extraInfo
+	myGlobal.MyVersion = CheckVersion
 	cfgFile, checkMode := myInit.InitArgs(cfgRequired)
 	switch checkMode {
 		case "slavelag":
@@ -134,6 +136,6 @@ func main() {
 		strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], checkMode, err, thresHold)
 	}
 	fmt.Printf("%s", exitMsg)
-	log.Printf("%s", exitMsg)
+	myUtils.LogMsg(fmt.Sprintf("%s", exitMsg))
 	os.Exit(exitVal)
 }

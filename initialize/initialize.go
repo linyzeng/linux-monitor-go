@@ -92,7 +92,7 @@ func getYamlValue(yamFile *simpleyaml.Yaml, section string, key string) (string,
 		return strconv.FormatBool(value), err
 	}
 	err := fmt.Errorf("Unsupported value for section %s and key %s, suported are: string, int and bool\n", section, key)
-	log.Printf("%s\n", err.Error())
+	myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
 	return "", err
 }
 
@@ -175,7 +175,7 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 	// make sure we have all required configs
 	if len(missingKeys) != 0 {
 		fmt.Printf("Following keys are missing in the configration files: %s\n", missingKeys)
-		log.Printf("Following keys are missing in the configration files: %s\n", missingKeys)
+		myUtils.LogMsg(fmt.Sprintf("Following keys are missing in the configration files: %s", missingKeys))
 		os.Exit(2)
 	}
 	return dictCfg
@@ -183,12 +183,16 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 
 // Function to initialize logging
 func InitLog() {
+	// is nolog was requested then we return
+	if myGlobal.DefaultValues["nolog"] == "true" {
+		return
+	}
 	if len(myGlobal.DefaultLog["logfile"]) > 0 {
 		// create directory
 		err := os.MkdirAll(myGlobal.DefaultLog["logdir"], 0755) 
 		if err != nil {
 			fmt.Printf("Unable to create Log directory, logs are send to console!\n")
-			log.Printf("%s\n", err.Error())
+			myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
 			return
 		}
 		logFileFullPath := fmt.Sprintf("%s/%s", myGlobal.DefaultLog["logdir"], myGlobal.DefaultLog["logfile"])
@@ -216,6 +220,7 @@ func InitArgs(cfg []string) (string, string) {
 	version := flag.Bool("version", false, "Prints current version and exit.")
 	setup := flag.Bool("setup", false, "Show the setup information and exit.")
 	noalert := flag.Bool("noalert", false, "Send no alert.")
+	stats := flag.Bool("stats", false, "Create stats if set.")
 	nolog := flag.Bool("nolog", false, "Do not log result.")
 	flag.Var(&myConfigFile, "config", "Configuration file to be used.")
 	flag.Var(&myMode, "mode", "check mode, use `-mode help` to see available modes.")
@@ -237,5 +242,6 @@ func InitArgs(cfg []string) (string, string) {
 	// set the noalert and nolog
 	myGlobal.DefaultValues["noalert"] = strconv.FormatBool(*noalert)
 	myGlobal.DefaultValues["nolog"] = strconv.FormatBool(*nolog)
+	myGlobal.DefaultValues["stats"] = strconv.FormatBool(*stats)
 	return myConfigFile.value, myMode.value
 }

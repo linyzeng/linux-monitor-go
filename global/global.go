@@ -67,8 +67,11 @@ var (
 	myCopyright	= "Copyright 2014 - " + strconv.Itoa(now.Year()) + " ©badassops"
 	myLicense	= "License BSD, http://www.freebsd.org/copyright/freebsd-license.html ♥"
 	myEmail		= "<luc@badassops.com>"
-	MyInfo		= fmt.Sprintf("%s %s\n%s\n%s\nWritten by %s %s\n",
-					MyProgname, MyVersion, myCopyright, myLicense, myAuthor, myEmail)
+
+	// set the check info, we do not show the version as teh global version is the framework
+	// version and not the check's
+	MyInfo = fmt.Sprintf("%s\n%s\n%s\nWritten by %s %s\n",
+		MyProgname, myCopyright, myLicense, myAuthor, myEmail)
 
 	// Global variables
 	Logfile			string
@@ -81,8 +84,9 @@ var (
 	DefaultValues		= make(map[string]string)
 	DefaultConfDir		= "/etc/nagios-plugins-go"
 	DefaultConfigFile	= fmt.Sprintf("%s/nagios-plugins-go.yaml", DefaultConfDir)
-	// alert, logging and debuging mode
+	// alert, stats logging and debuging mode
 	DefaultNoAlert			= "false"
+	DefaultCreateStats		= "false"
 	DefaultNoLog			= "false"
 	DefaultDebug			= "false"
 
@@ -146,6 +150,7 @@ func init() {
 	// the common section
 	DefaultValues = make(map[string]string)
 	DefaultValues["noalert"]			=	DefaultNoAlert
+	DefaultValues["stats"]				=	DefaultCreateStats
 	DefaultValues["nolog"]				=	DefaultNoLog
 	DefaultValues["debug"]				=	DefaultDebug
 	// for Log

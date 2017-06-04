@@ -37,12 +37,12 @@ package alerts
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	mytag		"github.com/my10c/nagios-plugins-go/tag"
+	myTag		"github.com/my10c/nagios-plugins-go/tag"
+	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 )
 
 // Function to sent alerts
@@ -58,7 +58,7 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 		hostName = "Unable to get hostname"
 	}
 	hostName = strings.TrimSpace(hostName)
-	tagInfo, tagOK := mytag.GetTagInfo()
+	tagInfo, tagOK := myTag.GetTagInfo()
 	if tagOK != nil {
 		message = fmt.Sprintf("TAG: no tag found\nHost: %s\n%s: %s\nCheck running mode: %s\nError: %s\n",
 				hostName, myGlobal.MyProgname, errWord, checkMode, checkErr)
@@ -113,7 +113,7 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 		}
 	}
 	if err != nil {
-		log.Printf("%s\n", err.Error())
+		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
 	}
 	return err
 }
