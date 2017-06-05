@@ -157,10 +157,14 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		}
 	}
 	// set the config value
-	// we set first the stats default values so is then can be overwritten
-	for cnt := range myGlobal.OptionalKeys {
-		keyName := myGlobal.OptionalKeys[cnt]
-		dictCfg[keyName] = myGlobal.DefaultStats[keyName]
+	// we set first the stats default values since these are optional
+	for statsCnt := range myGlobal.OptionalKeys {
+		statsKey := myGlobal.OptionalKeys[statsCnt]
+		if statsValue, err := getYamlValue(yamlFile, myGlobal.MyProgname, statsKey); err == nil {
+			dictCfg[statsKey] = statsValue
+		} else {
+			dictCfg[statsKey] = myGlobal.DefaultStats[statsKey]
+		}
 	}
 	for cnt := range cfgList {
 		keyName := cfgList[cnt]

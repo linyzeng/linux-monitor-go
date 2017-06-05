@@ -38,30 +38,87 @@ package stats
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 
 )
 
-var  Stats {
+type Stats struct {
+	StatFilename string
+	Enable bool
+	StatsRecord string
+	mu sync.Mutex
+}
+
+// Function to create a stats jobs
+func New() *Stats {
+	statFilenName, isEnable := initStats()
+	statPtr := &Stats {
+		StatFilename: statFilenName,
+		Enable: isEnable,
+		StatsRecord:  "",
+	}
+	return statPtr
 }
 
 // Function to initialize the stats directoty and the stats file
-func New() error {
-	// only if stats was enable and both statsdir and statsfiel were set
-	if myGlobal.DefaultValues["stats"] == "false" ||
-		len(myGlobal.DefaultValues["statsdir"]) == 0 ||
-		len(myGlobal.DefaultValues["statsfile"]) == 0 {
-		return nil
+func initStats() (string, bool) {
+	// only if stats was enable
+	if myGlobal.DefaultStats["stats"] == "false" {
+		err := fmt.Errorf("Stats is disable.")
+		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
+		return "", false
+	}
+	fmt.Printf("dir %s file %s\n\n", myGlobal.DefaultStats["statsdir"], myGlobal.DefaultStats["statsfile"])
+	// make sure the both statsdir and statsfiel were set
+	if len(myGlobal.DefaultStats["statsdir"]) == 0 ||
+		len(myGlobal.DefaultStats["statsfile"]) == 0 {
+		err := fmt.Errorf("Either statsdir or/and statsfile was not set, stats has been disabled.")
+		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
+		myGlobal.DefaultStats["stats"] = "false"
+		return "", false
 	}
 	// create the directory
 	err := os.MkdirAll(myGlobal.DefaultLog["logdir"], 0755)
 	if err != nil {
 		fmt.Printf("Unable to create stats directory, stats has been disabled.\n")
 		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
-		myGlobal.DefaultValues["stats"] = "false"
+		myGlobal.DefaultStats["stats"] = "false"
+		return "", false
+	}
+	// create the full path name
+	statsFile := fmt.Sprintf("%s/%s", myGlobal.DefaultStats["statsdir"], myGlobal.DefaultStats["statsfile"])
+	return statsFile, true 
+}
+
+// Function to write given stats record to the stat file
+func (statsPtr *Stats) WriteStat() error {
+	// we return if forwhatever reason that stats is not enabled
+	if  !statsPtr.Enable {
+		return nil
+	}
+	statsFile, err := os.OpenFile(statsPtr.StatFilename, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		myUtils.LogMsg(fmt.Sprintf("Unable to open the stats file, this record has been skipped.\n%s\n", statsPtr.StatsRecord))
+		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
+		return err
+	}
+	defer statsFile.Close()
+	statsPtr.mu.Lock()
+	defer statsPtr.mu.Unlock()
+	_, err = statsFile.WriteString(statsPtr.StatsRecord)
+	if err != nil {
+		fmt.Printf("Unable to open write stats record, this record has been skipped.\n")
+		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
 		return err
 	}
 	return nil
+}
+
+// Function to create a start record based on the given string
+func (statsPtr *Stats) CreateRecord() error {
+	var err error = nil
+	return err
 }

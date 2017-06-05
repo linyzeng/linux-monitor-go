@@ -47,6 +47,7 @@ import (
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
 	myAlert		"github.com/my10c/nagios-plugins-go/alert"
+	myStats		"github.com/my10c/nagios-plugins-go/stats"
 )
 
 const (
@@ -81,7 +82,7 @@ func wrongMode(modeSelect string) {
 
 func main() {
 	// need to be root since the config file wil have passwords
-	myUtils.IsRoot()
+	// myUtils.IsRoot()
 	var thresHold string = ""
 	var exitMsg string
 	// add the extra setup info
@@ -127,6 +128,7 @@ func main() {
 		default:
 			wrongMode(checkMode)
 	}
+	stats := myStats.New()
 	if exitVal != myGlobal.OK {
 		if myGlobal.DefaultValues["noalert"]  == "false" {
 			myAlert.SendAlert(exitVal, checkMode, err.Error())
