@@ -38,6 +38,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -82,7 +83,7 @@ func wrongMode(modeSelect string) {
 
 func main() {
 	// need to be root since the config file wil have passwords
-	myUtils.IsRoot()
+	// myUtils.IsRoot()
 	var thresHold string = ""
 	var exitMsg string
 	// add the extra setup info
@@ -103,32 +104,47 @@ func main() {
 	myInit.InitLog()
 	myUtils.SignalHandler()
 	dbCheck := myMySQL.New(cfgDict)
+	//-->  stats := myStats.New()
 	data := time.Now().Format(time.RFC3339)
-	switch checkMode {
-		case "basic":
-			exitVal, err = dbCheck.BasisCheck(table, field, data)
-		case "readonly":
-			exitVal, err = dbCheck.ReadCheck(table, field)
-		case "slavestatus":
-			exitVal, err = dbCheck.SlaveStatusCheck()
-		case "slavelag":
-			warning, critical, _ := myThreshold.SanityCheck(cfgDict["lagwarning"], cfgDict["lagcritical"])
-			exitVal, err = dbCheck.SlaveLagCheck(warning, critical)
-			thresHold = fmt.Sprintf(" (W:%d C:%d )", warning, critical)
-		case "process":
-			warning, critical, _ := myThreshold.SanityCheck(cfgDict["processwarning"], cfgDict["processcritical"])
-			exitVal, err = dbCheck.ProcessStatusCheck(warning, critical)
-			thresHold = fmt.Sprintf(" (W:%d C:%d )", warning, critical)
-		case "dropcreate":
-			exitVal, err = dbCheck.DropCreateCheck(cfgDict["tablename"])
-		case "showconfig":
-			myUtils.ShowMap(cfgDict)
-			myUtils.ShowMap(nil)
-			os.Exit(0)
-		default:
-			wrongMode(checkMode)
+	iter, _ := strconv.Atoi(cfgDict["iter"])
+	iterWait, _ := time.ParseDuration(cfgDict["iterwait"])
+	for cnt :=0 ; cnt  < iter ; cnt++ {
+		switch checkMode {
+			case "basic":
+				exitVal, err = dbCheck.BasisCheck(table, field, data)
+			case "readonly":
+				exitVal, err = dbCheck.ReadCheck(table, field)
+			case "slavestatus":
+				exitVal, err = dbCheck.SlaveStatusCheck()
+			case "slavelag":
+				warning, critical, _ := myThreshold.SanityCheck(cfgDict["lagwarning"], cfgDict["lagcritical"])
+				exitVal, err = dbCheck.SlaveLagCheck(warning, critical)
+				thresHold = fmt.Sprintf(" (W:%d C:%d )", warning, critical)
+			case "process":
+				warning, critical, _ := myThreshold.SanityCheck(cfgDict["processwarning"], cfgDict["processcritical"])
+				exitVal, err = dbCheck.ProcessStatusCheck(warning, critical)
+				thresHold = fmt.Sprintf(" (W:%d C:%d )", warning, critical)
+			case "dropcreate":
+				exitVal, err = dbCheck.DropCreateCheck(cfgDict["tablename"])
+			case "showconfig":
+				myUtils.ShowMap(cfgDict)
+				myUtils.ShowMap(nil)
+				os.Exit(0)
+			default:
+				wrongMode(checkMode)
+		}
+		// if we get an OK then exit no need to do all iterations
+		if exitVal == myGlobal.OK {
+			break
+		}
+		time.Sleep(iterWait * time.Second)
 	}
-	// stats := myStats.New()
+	// We only need 1 entry in the stats instead of all iteration like other check need
+	// create Stats record if stats == true
+	// if stats.Enable {
+	//		stats.StatsRecord := .. some info and someformat
+	//		stats.CreateRecord()  or stats.WriteStat()
+	// }
 	if exitVal != myGlobal.OK {
 		if myGlobal.DefaultValues["noalert"]  == "false" {
 			myAlert.SendAlert(exitVal, checkMode, err.Error())
