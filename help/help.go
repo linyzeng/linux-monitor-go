@@ -73,11 +73,15 @@ func SetupHelp(cfg []string) {
 	for cnt := range cfg {
 		fmt.Printf("\t  %s:\n", cfg[cnt])
 	}
-	// stats are hardcode
-	color.Green("# When enable stats (-stats) then the keys below are required, below are the default values.\n")
+	// stats are hardcoded
+	color.HiGreen("# When enable stats (-stats) then the keys below are required, below are the default values.\n")
 	fmt.Printf("\t  statsdir: %s.stat\n", myGlobal.DefaultLog["logdir"])
 	fmt.Printf("\t  statsfile: %s.stat\n", myGlobal.MyProgname)
+	// iter are also hardcoded
+	color.HiGreen("# How many iteration to perform and how much to wait between (seconds) them before its an issue.\n")
 	// print the sections configs
+	fmt.Printf("\t  iter: %s\n", myGlobal.DefaultOptionals["iter"])
+	fmt.Printf("\t  iterwait: %s\n", myGlobal.DefaultOptionals["iterwait"])
 	fmt.Printf("# Values shown are the default values. If a section is ommitted, then it will use the default values.\n")
 	printCfgValues("common", "", myGlobal.DefaultValues)
 	printCfgValues("log", "logfile", myGlobal.DefaultLog)

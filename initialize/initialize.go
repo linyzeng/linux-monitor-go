@@ -163,7 +163,7 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		if statsValue, err := getYamlValue(yamlFile, myGlobal.MyProgname, statsKey); err == nil {
 			dictCfg[statsKey] = statsValue
 		} else {
-			dictCfg[statsKey] = myGlobal.DefaultStats[statsKey]
+			dictCfg[statsKey] = myGlobal.DefaultOptionals[statsKey]
 		}
 	}
 	for cnt := range cfgList {

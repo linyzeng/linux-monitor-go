@@ -53,6 +53,16 @@ check-c:
   username: mumu
 ```
 
+configuration that applies to all checks:
+```
+	# When enable stats (-stats) then the keys below are required, below are the default values.
+	  	statsdir: /var/log/nagios-plugins-go.stat
+	  	statsfile: {check-name}.stat
+	# How many iteration to perform and how much to wait between (seconds) them before its an issue.
+	  	iter: 3
+	  	iterwait: 10
+```
+
 Here are the shared configurarion:
 seems like a lot, but you should only need to configure these once, or disable the one
 you do not care about or use the default.
@@ -92,7 +102,7 @@ is by default disabled
 	  tagkeyname:
 	# to disable set `syslogtag: off`, if shown empty, then its disable by default.
 	syslog:
-	  syslogtag: [check-mysql]
+	  syslogtag: [{check-name}]
 	  syslogpriority: LOG_INFO
 	  syslogfacility: LOG_SYSLOG
 	# to disable set an empty `pdservicekey`, if shown empty, then its disable by default.

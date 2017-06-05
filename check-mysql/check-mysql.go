@@ -47,7 +47,7 @@ import (
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
 	myAlert		"github.com/my10c/nagios-plugins-go/alert"
-	myStats		"github.com/my10c/nagios-plugins-go/stats"
+	//myStats		"github.com/my10c/nagios-plugins-go/stats"
 )
 
 const (
@@ -128,7 +128,7 @@ func main() {
 		default:
 			wrongMode(checkMode)
 	}
-	stats := myStats.New()
+	// stats := myStats.New()
 	if exitVal != myGlobal.OK {
 		if myGlobal.DefaultValues["noalert"]  == "false" {
 			myAlert.SendAlert(exitVal, checkMode, err.Error())

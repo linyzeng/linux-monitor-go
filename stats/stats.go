@@ -66,18 +66,18 @@ func New() *Stats {
 // Function to initialize the stats directoty and the stats file
 func initStats() (string, bool) {
 	// only if stats was enable
-	if myGlobal.DefaultStats["stats"] == "false" {
+	if myGlobal.DefaultOptionals["stats"] == "false" {
 		err := fmt.Errorf("Stats is disable.")
 		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
 		return "", false
 	}
-	fmt.Printf("dir %s file %s\n\n", myGlobal.DefaultStats["statsdir"], myGlobal.DefaultStats["statsfile"])
+	fmt.Printf("dir %s file %s\n\n", myGlobal.DefaultOptionals["statsdir"], myGlobal.DefaultOptionals["statsfile"])
 	// make sure the both statsdir and statsfiel were set
-	if len(myGlobal.DefaultStats["statsdir"]) == 0 ||
-		len(myGlobal.DefaultStats["statsfile"]) == 0 {
+	if len(myGlobal.DefaultOptionals["statsdir"]) == 0 ||
+		len(myGlobal.DefaultOptionals["statsfile"]) == 0 {
 		err := fmt.Errorf("Either statsdir or/and statsfile was not set, stats has been disabled.")
 		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
-		myGlobal.DefaultStats["stats"] = "false"
+		myGlobal.DefaultOptionals["stats"] = "false"
 		return "", false
 	}
 	// create the directory
@@ -85,11 +85,11 @@ func initStats() (string, bool) {
 	if err != nil {
 		fmt.Printf("Unable to create stats directory, stats has been disabled.\n")
 		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
-		myGlobal.DefaultStats["stats"] = "false"
+		myGlobal.DefaultOptionals["stats"] = "false"
 		return "", false
 	}
 	// create the full path name
-	statsFile := fmt.Sprintf("%s/%s", myGlobal.DefaultStats["statsdir"], myGlobal.DefaultStats["statsfile"])
+	statsFile := fmt.Sprintf("%s/%s", myGlobal.DefaultOptionals["statsdir"], myGlobal.DefaultOptionals["statsfile"])
 	return statsFile, true 
 }
 
