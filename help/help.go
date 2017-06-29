@@ -80,8 +80,8 @@ func SetupHelp(cfg []string) {
 	// iter are also hardcoded
 	color.HiGreen("# How many iteration to perform and how much to wait between (seconds) them before its an issue.\n")
 	// print the sections configs
-	fmt.Printf("\t  iter: %s\n", myGlobal.DefaultOptionals["iter"])
-	fmt.Printf("\t  iterwait: %s\n", myGlobal.DefaultOptionals["iterwait"])
+	fmt.Printf("\t  iter: %s\n", myGlobal.DefaultIter["iter"])
+	fmt.Printf("\t  iterwait: %s\n", myGlobal.DefaultIter["iterwait"])
 	fmt.Printf("# Values shown are the default values. If a section is ommitted, then it will use the default values.\n")
 	printCfgValues("common", "", myGlobal.DefaultValues)
 	printCfgValues("log", "logfile", myGlobal.DefaultLog)

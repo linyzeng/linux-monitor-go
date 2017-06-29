@@ -37,7 +37,7 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"os"
 	//"time"
 
@@ -50,6 +50,7 @@ import (
 
 func main() {
 	myUtils.IsLinuxSystem()
-	fmt.Println(myDisk.New())
+	//fmt.Println(myDisk.New())
+	myDisk.New()
 	os.Exit(0)
 }

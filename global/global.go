@@ -137,12 +137,15 @@ var (
 	// result wording
     Result = []string{ "OK", "WARNING", "CRITICAL", "UNKNOWN" }
 
-	// stats and iteration are always optional but has a default value. so this is hardcoded!
-	DefaultOptionals		map[string]string
-	OptionalKeys			= []string{"statsdir", "statsfile", "iter", "iterwait"}
+	// stats is always optional but has a default value. so this is hardcoded!
+	DefaultStats			map[string]string
+	StatsOptionalKeys		= []string{"statsdir", "statsfile"}
 	DefaultStatsDir			= DefaultLogsDir
 	DefaultStatsFile		= fmt.Sprintf("%s", MyProgname)
-	DefaultIter				= 3
+
+	DefaultIter				map[string]string
+	IterOptionalKeys		= []string{"iter", "iterwait"}
+	DefaultIterCnt			= 3
 	DefaultIterWait			= 10 // seconds
 )
 
@@ -195,9 +198,11 @@ func init() {
 	DefaultSlack["slackuser"]			=	DefaultSlackUser
 	DefaultSlack["iconemoji"]			=	DefaultSlackIconEmoji
 	// for stat
-	DefaultOptionals = make(map[string]string)
-	DefaultOptionals["statsdir"]		=	DefaultStatsDir
-	DefaultOptionals["statsfile"]		=	DefaultStatsFile
-	DefaultOptionals["iter"]			=	strconv.Itoa(DefaultIter)
-	DefaultOptionals["iterwait"]		=	strconv.Itoa(DefaultIterWait)
+	DefaultStats = make(map[string]string)
+	DefaultStats["statsdir"]			=	DefaultStatsDir
+	DefaultStats["statsfile"]			=	DefaultStatsFile
+	// for iter
+	DefaultIter = make(map[string]string)
+	DefaultIter["iter"]					= strconv.Itoa(DefaultIterCnt)
+	DefaultIter["iterwait"]				= strconv.Itoa(DefaultIterWait)
 }

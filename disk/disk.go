@@ -36,16 +36,14 @@
 package disk
 
 import (
-//	"fmt"
 	"io/ioutil"
 //	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-//	"syscall"
 //	"strconv"
-//	"syscall"
-//
+	"syscall"
+
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 //	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
@@ -56,45 +54,131 @@ const (
 )
 
 var (
-	// valid partiton and disk we support
-	parRegex = `^(/dev/)(xvd|sd|disk|mapper)`
+	// valid device we support
+	devRegex = `^(/dev/)(xvd|sd|disk|mapper)`
 	symRegex = `^(/dev/)(disk|mapper)`
 )
 
-type LnxDisk struct {
-	totalSpace uint64
-	totalUse uint64
-	totalFree uint64
-	mountPoint string
+type parStruct struct {
+	device		string
+	mountpoint	string
+	fsType		string
 }
 
-func New() map[string]string {
+type diskStruct struct {
+	totalSpace	uint64	`json:"total"`
+	totalUse	uint64	`json:"used"`
+	totalFree	uint64	`json:"free"`
+	totalInodes	uint64	`json:"inodes"`
+	freeInodes	uint64	`json:"freeinodes"`
+	mountPoint	string	`json:"mount"`
+	device		string	`json:"device"`
+	fsType		string	`json:"fstype"`
+}
+
+func getPartitions() map[string]parStruct {
+	// working variable
+	var currPartition parStruct
+	// get disks info from proc
 	contents, err := ioutil.ReadFile(PROCMOUNT)
 	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
 	// prep the regex, we ignore the errors
-	expDisk, _ :=  regexp.Compile(parRegex)
+	expDev, _ :=  regexp.Compile(devRegex)
 	expLogics, _ := regexp.Compile(symRegex)
 	// create the return map
-	diskInfo := make(map[string]string)
+	detectedPartitions := make(map[string]parStruct)
 	// get all lines and walk one at the time
 	lines := strings.Split(string(contents), "\n")
 	for _, line := range(lines) {
 		if line != "" {
-			currPar := strings.Fields(line)[0]
+			// we need the first 3 fields : device, mountpoint, type
+			currDevice := strings.Fields(line)[0]
 			currMountPoint := strings.Fields(line)[1]
+			currFSType := strings.Fields(line)[2]
 			// we only want those matching parRegex
-			match := expDisk.MatchString(currPar)
+			match := expDev.MatchString(currDevice)
 			if match {
 				// check is we have a possible symlink or fullpath
-				match = expLogics.MatchString(currPar)
+				match = expLogics.MatchString(currDevice)
 				if match {
-					// currPar, _ := os.Readlink(currPar)
-					currPar, _ = filepath.EvalSymlinks(currPar)
+					currDevice, _ = filepath.EvalSymlinks(currDevice)
 				}
 				// get the disk/partion info
-				diskInfo[currMountPoint] = currPar
+				currPartition.device = currDevice
+				currPartition.mountpoint = currMountPoint
+				currPartition.fsType = currFSType
+				detectedPartitions[currMountPoint] = currPartition
 			}
 		}
 	}
-	return diskInfo
+	return detectedPartitions
+}
+
+// Function to get the given partition/mount point file system info
+func getDiskinfo(path string) (diskStruct, error) {
+	var disk diskStruct
+	fs := syscall.Statfs_t{}
+	err := syscall.Statfs(path, &fs)
+	if err != nil {
+		return disk, err
+	}
+	disk.totalSpace = fs.Blocks * uint64(fs.Bsize)
+	disk.totalFree = fs.Bfree * uint64(fs.Bsize)
+	disk.totalUse = disk.totalSpace - disk.totalFree
+	disk.totalInodes = fs.Files
+	disk.freeInodes = fs.Ffree
+	disk.mountPoint = path
+	return disk, nil
+}
+
+// Function to get the available disks information
+func New() map[string]diskStruct {
+	var err error
+	var currDisk diskStruct
+	// create the disk/partition map
+	detectedPart := make(map[string]diskStruct)
+	// will return empty map if no valid disk/partition was found
+	for mntPoint, partInfo := range getPartitions() {
+		currDisk, err = getDiskinfo(mntPoint)
+		if err != nil {
+			return nil
+		}
+		currDisk.device = partInfo.device
+		currDisk.fsType = partInfo.fsType
+		detectedPart[mntPoint] = currDisk
+	}
+	return detectedPart
+}
+
+// Functions to get disk/partitions element info
+func (diskPtr *diskStruct) GetType() string {
+	return diskPtr.fsType
+}
+
+func (diskPtr *diskStruct) GetSize() uint64 {
+	return diskPtr.totalSpace
+}
+
+func (diskPtr *diskStruct) GetUse() uint64 {
+	return diskPtr.totalUse
+}
+
+func (diskPtr *diskStruct) GetFree() uint64 {
+	return diskPtr.totalFree
+}
+
+func (diskPtr *diskStruct) GetInodes() uint64 {
+	return diskPtr.totalInodes
+}
+
+func (diskPtr *diskStruct) GetFreeInodes() uint64 {
+	return diskPtr.freeInodes
+}
+
+func (diskPtr *diskStruct) GetMountPoint() string {
+	return diskPtr.mountPoint
+}
+
+func (diskPtr *diskStruct) GetDev() string {
+	return diskPtr.device
 }

@@ -158,14 +158,24 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 	}
 	// set the config value
 	// we set first the stats default values since these are optional
-	for statsCnt := range myGlobal.OptionalKeys {
-		statsKey := myGlobal.OptionalKeys[statsCnt]
+	for statsCnt := range myGlobal.StatsOptionalKeys {
+		statsKey := myGlobal.StatsOptionalKeys[statsCnt]
 		if statsValue, err := getYamlValue(yamlFile, myGlobal.MyProgname, statsKey); err == nil {
 			dictCfg[statsKey] = statsValue
 		} else {
-			dictCfg[statsKey] = myGlobal.DefaultOptionals[statsKey]
+			dictCfg[statsKey] = myGlobal.DefaultStats[statsKey]
 		}
 	}
+	// last we set the iter value. like stats these are optional
+	for iterCnt := range myGlobal.IterOptionalKeys {
+		iterKey := myGlobal.IterOptionalKeys[iterCnt]
+		if iterValue, err := getYamlValue(yamlFile, myGlobal.MyProgname, iterKey); err == nil {
+			dictCfg[iterKey] = iterValue
+		} else {
+			dictCfg[iterKey] = myGlobal.DefaultIter[iterKey]
+		}
+	}
+	// get the check keys
 	for cnt := range cfgList {
 		keyName := cfgList[cnt]
 		if cfgValue, err := getYamlValue(yamlFile, myGlobal.MyProgname, keyName); err == nil {
