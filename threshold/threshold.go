@@ -47,25 +47,25 @@ import (
 var (
 	percent bool = false
 	cnt int = 0
-	warnThreshold int
-	critThreshold int
+	warnThreshold uint64
+	critThreshold uint64
 )
 
 // Function to check that the configured thresholds are correct
-func SanityCheck(warning string, critical string) (int, int, bool){
+func SanityCheck(warning string, critical string) (uint64, uint64, bool){
 	if  strings.HasSuffix(warning, "%") {
 		percent = true
-		warnThreshold, _ = strconv.Atoi(warning[:len(warning) - 1])
+		warnThreshold, _ = strconv.ParseUint(warning[:len(warning) - 1], 10, 64)
 		cnt++
 	} else {
-		warnThreshold , _ = strconv.Atoi(warning)
+		warnThreshold , _ = strconv.ParseUint(warning, 10, 64)
 	}
 	if  strings.HasSuffix(critical, "%") {
 		percent = true
-		critThreshold, _ = strconv.Atoi(critical[:len(critical) - 1])
+		critThreshold, _ = strconv.ParseUint(critical[:len(critical) - 1], 10, 64)
 		cnt++
 	} else {
-		critThreshold , _ = strconv.Atoi(critical)
+		critThreshold , _ = strconv.ParseUint(critical, 10, 64)
 	}
 	if percent == true {
 		if cnt != 2 {
@@ -93,10 +93,10 @@ func SanityCheck(warning string, critical string) (int, int, bool){
 }
 
 // Function to check if the value is within threshold
-func CalculateUsage(precent bool, warnThreshold int, critThreshold int, currValue int, totalValue int) int {
+func CalculateUsage(precent bool, warnThreshold uint64, critThreshold uint64, currValue uint64, totalValue uint64) int {
 	// calculate based on %
 	if precent == true {
-		currValue = int((float64(currValue) * float64(100) ) / float64(totalValue))
+		currValue = (currValue/totalValue) * 100
 	}
 	if currValue >= critThreshold {
 		return 2

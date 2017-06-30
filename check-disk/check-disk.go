@@ -37,20 +37,91 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	"os"
 	//"time"
 
-	//myInit		"github.com/my10c/nagios-plugins-go/initialize"
+	myInit		"github.com/my10c/nagios-plugins-go/initialize"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	myDisk		"github.com/my10c/nagios-plugins-go/disk"
-	//myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	//myDisk		"github.com/my10c/nagios-plugins-go/disk"
+	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	//myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
 )
 
+const (
+	field = "timestamp"
+	extraInfo = "Requires the warning and critical thresholds\n\t\tEmpty unit defaults to MB and empty disk defaults to all disks"
+	CheckVersion = "0.1"
+)
+
+var (
+	cfgRequired = []string{"critical", "warning", "disk", "unit"}
+	err error
+	exitVal int = 0
+)
+
+func wrongMode(modeSelect string) {
+	fmt.Printf("%s", myGlobal.MyInfo)
+	if modeSelect == "help" {
+		fmt.Printf("Supported modes\n")
+	} else {
+		fmt.Printf("Wrong mode, supported modes:\n")
+	}
+	fmt.Printf("\t diskspace	: checks diskspace.\n")
+	fmt.Printf("\t inodes		: checks inodes.\n")
+	os.Exit(3)
+}
+
+func wrongUnit(confUnit string) {
+	fmt.Printf("%s", myGlobal.MyInfo)
+	fmt.Printf("Wrong unit %s, supported unit:\n", confUnit)
+	fmt.Printf("\t KB	: KiloBytes, most accurate.\n")
+	fmt.Printf("\t MB	: MegaBytes, good accuracy.\n")
+	fmt.Printf("\t GB	: GigaBytes, less accurate.\n")
+	fmt.Printf("\t TB	: TerraBytes, worst accuracy.\n")
+	os.Exit(3)
+}
+
+func checkUnit(unit string) uint64 {
+	var unitBytes uint64
+	switch unit {
+		case "":
+			unitBytes = myGlobal.MB
+		case "KB":
+			unitBytes = myGlobal.KB
+		case "MB":
+			unitBytes = myGlobal.MB
+		case "GB":
+			unitBytes = myGlobal.GB
+		case "TB":
+			unitBytes = myGlobal.TB
+		default:
+			wrongUnit(unit)
+	}
+	return unitBytes
+}
+
+func checkMode(givenMode string) {
+	switch givenMode {
+		case "diskspace":
+		case "inode":
+		default:
+			wrongMode(givenMode)
+	}
+}
+
 func main() {
 	myUtils.IsLinuxSystem()
-	//fmt.Println(myDisk.New())
-	myDisk.New()
+	// for mountPoint, diskPtr := range myDisk.New() {
+	// 	fmt.Printf("%s - %s - %d - %s \n",
+	// 		mountPoint, diskPtr.GetType(), diskPtr.GetSize(myGlobal.MB), diskPtr.GetState())
+	//}
+	myGlobal.ExtraInfo = extraInfo
+	myGlobal.MyVersion = CheckVersion
+	cfgFile, givenMode := myInit.InitArgs(cfgRequired)
+	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
+	checkUnit(cfgDict["unit"])
+	checkMode(givenMode)
+	fmt.Println(cfgDict)
 	os.Exit(0)
 }

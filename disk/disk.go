@@ -37,16 +37,14 @@ package disk
 
 import (
 	"io/ioutil"
-//	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-//	"strconv"
 	"syscall"
 
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-//	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
+	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
 )
 
 const (
@@ -60,12 +58,13 @@ var (
 )
 
 type parStruct struct {
-	device		string
-	mountpoint	string
-	fsType		string
+	device		string	`json:"device"`
+	mountpoint	string	`json:"mount"`
+	fsType		string	`json:"fstype"`
+	mountState	string	`json:"state"`
 }
 
-type diskStruct struct {
+type diskType struct {
 	totalSpace	uint64	`json:"total"`
 	totalUse	uint64	`json:"used"`
 	totalFree	uint64	`json:"free"`
@@ -74,6 +73,7 @@ type diskStruct struct {
 	mountPoint	string	`json:"mount"`
 	device		string	`json:"device"`
 	fsType		string	`json:"fstype"`
+	mountState	string	`json:"state"`
 }
 
 func getPartitions() map[string]parStruct {
@@ -83,7 +83,7 @@ func getPartitions() map[string]parStruct {
 	contents, err := ioutil.ReadFile(PROCMOUNT)
 	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
 	// prep the regex, we ignore the errors
-	expDev, _ :=  regexp.Compile(devRegex)
+	expDev, _ := regexp.Compile(devRegex)
 	expLogics, _ := regexp.Compile(symRegex)
 	// create the return map
 	detectedPartitions := make(map[string]parStruct)
@@ -91,10 +91,11 @@ func getPartitions() map[string]parStruct {
 	lines := strings.Split(string(contents), "\n")
 	for _, line := range(lines) {
 		if line != "" {
-			// we need the first 3 fields : device, mountpoint, type
+			// we need the first 3 fields : device, mountpoint, type and first word of mount (rw or ro)
 			currDevice := strings.Fields(line)[0]
 			currMountPoint := strings.Fields(line)[1]
 			currFSType := strings.Fields(line)[2]
+			currState := strings.Split(strings.Fields(line)[3], ",")[0]
 			// we only want those matching parRegex
 			match := expDev.MatchString(currDevice)
 			if match {
@@ -107,6 +108,7 @@ func getPartitions() map[string]parStruct {
 				currPartition.device = currDevice
 				currPartition.mountpoint = currMountPoint
 				currPartition.fsType = currFSType
+				currPartition.mountState = currState
 				detectedPartitions[currMountPoint] = currPartition
 			}
 		}
@@ -115,70 +117,100 @@ func getPartitions() map[string]parStruct {
 }
 
 // Function to get the given partition/mount point file system info
-func getDiskinfo(path string) (diskStruct, error) {
-	var disk diskStruct
+func getDiskinfo(path string) *diskType {
 	fs := syscall.Statfs_t{}
 	err := syscall.Statfs(path, &fs)
 	if err != nil {
-		return disk, err
+		myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
 	}
-	disk.totalSpace = fs.Blocks * uint64(fs.Bsize)
-	disk.totalFree = fs.Bfree * uint64(fs.Bsize)
-	disk.totalUse = disk.totalSpace - disk.totalFree
-	disk.totalInodes = fs.Files
-	disk.freeInodes = fs.Ffree
-	disk.mountPoint = path
-	return disk, nil
+	disk := &diskType {
+		totalSpace	: fs.Blocks * uint64(fs.Bsize),
+		totalFree	: fs.Bfree * uint64(fs.Bsize),
+		totalUse	: (fs.Blocks * uint64(fs.Bsize)) - (fs.Bfree * uint64(fs.Bsize)),
+		totalInodes	: fs.Files,
+		freeInodes	: fs.Ffree,
+		mountPoint	: path,
+	}
+	return disk
 }
 
 // Function to get the available disks information
-func New() map[string]diskStruct {
-	var err error
-	var currDisk diskStruct
+func New() map[string]*diskType {
 	// create the disk/partition map
-	detectedPart := make(map[string]diskStruct)
+	detectedPart := make(map[string]*diskType)
 	// will return empty map if no valid disk/partition was found
 	for mntPoint, partInfo := range getPartitions() {
-		currDisk, err = getDiskinfo(mntPoint)
-		if err != nil {
+		currDisk := getDiskinfo(mntPoint)
+		if currDisk == nil {
 			return nil
 		}
 		currDisk.device = partInfo.device
 		currDisk.fsType = partInfo.fsType
+		currDisk.mountState = partInfo.mountState
 		detectedPart[mntPoint] = currDisk
 	}
 	return detectedPart
 }
 
 // Functions to get disk/partitions element info
-func (diskPtr *diskStruct) GetType() string {
+func (diskPtr *diskType) GetType() string {
 	return diskPtr.fsType
 }
 
-func (diskPtr *diskStruct) GetSize() uint64 {
-	return diskPtr.totalSpace
+func (diskPtr *diskType) GetSize(unit int) uint64 {
+	return diskPtr.totalSpace/uint64(unit)
 }
 
-func (diskPtr *diskStruct) GetUse() uint64 {
-	return diskPtr.totalUse
+func (diskPtr *diskType) GetUse(unit int) uint64 {
+	return diskPtr.totalUse/uint64(unit)
 }
 
-func (diskPtr *diskStruct) GetFree() uint64 {
-	return diskPtr.totalFree
+func (diskPtr *diskType) GetFree(unit int) uint64 {
+	return diskPtr.totalFree/uint64(unit)
 }
 
-func (diskPtr *diskStruct) GetInodes() uint64 {
-	return diskPtr.totalInodes
+func (diskPtr *diskType) GetInodes(unit int) uint64 {
+	return diskPtr.totalInodes/uint64(unit)
 }
 
-func (diskPtr *diskStruct) GetFreeInodes() uint64 {
+func (diskPtr *diskType) GetFreeInodes(unit int) uint64 {
 	return diskPtr.freeInodes
 }
 
-func (diskPtr *diskStruct) GetMountPoint() string {
+func (diskPtr *diskType) GetMountPoint() string {
 	return diskPtr.mountPoint
 }
 
-func (diskPtr *diskStruct) GetDev() string {
+func (diskPtr *diskType) GetDev() string {
 	return diskPtr.device
+}
+
+func (diskPtr *diskType) GetState() string {
+	return diskPtr.mountState
+}
+
+// Function to check available disk space
+func (diskPtr *diskType) CheckFree(warn, crit string, unit int) int {
+	warnThreshold, critThreshold, percent := myThreshold.SanityCheck(warn, crit)
+	return myThreshold.CalculateUsage(percent, warnThreshold, critThreshold,
+		diskPtr.GetFree(unit), diskPtr.GetSize(unit))
+}
+
+// Function to check available inodes if supported by the filesystem
+func (diskPtr *diskType) CheckFreeInode(warn, crit string, unit int) int {
+	// if both total inodes and free inodes are zero then the filesystem does use inodes
+	if (diskPtr.GetInodes(unit) == 0) && (diskPtr.GetFreeInodes(unit) == 0) {
+		return 0
+	}
+	warnThreshold, critThreshold, percent := myThreshold.SanityCheck(warn, crit)
+	return myThreshold.CalculateUsage(percent, warnThreshold, critThreshold,
+		diskPtr.GetInodes(unit), diskPtr.GetFreeInodes(unit))
+}
+
+// Function to check if the filesystem is mounted RO
+func (diskPtr *diskType) CheckRO(mntPoint string) int{
+	if diskPtr.mountState == "ro" {
+		return 1
+	}
+	return 0
 }

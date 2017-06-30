@@ -83,7 +83,7 @@ func wrongMode(modeSelect string) {
 
 func main() {
 	// need to be root since the config file wil have passwords
-	// myUtils.IsRoot()
+	myUtils.IsRoot()
 	var thresHold string = ""
 	var exitMsg string
 	// add the extra setup info

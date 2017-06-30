@@ -188,13 +188,13 @@ func (db *dbMysql) SlaveStatusCheck()  (int, error) {
 }
 
 // Check the Seconds_Behind_Master value
-func (db *dbMysql) SlaveLagCheck(warning int, critical int)  (int, error) {
+func (db *dbMysql) SlaveLagCheck(warning uint64, critical uint64)  (int, error) {
 	currStatus, err := db.getSlaveStatus()
 	if err != nil {
 		return myGlobal.CRITICAL, err
 	}
-	currStatusInt := currStatus["Seconds_Behind_Master"].(int64)
-	currTholdStatus := myThreshold.CalculateUsage(false, warning, critical, int(currStatusInt), 0)
+	currStatusInt := currStatus["Seconds_Behind_Master"].(uint64)
+	currTholdStatus := myThreshold.CalculateUsage(false, warning, critical, currStatusInt, 0)
 	if currTholdStatus != 0 {
 		err := fmt.Errorf("Slave is behind by %d", currStatusInt)
 		return currTholdStatus, err
@@ -204,14 +204,14 @@ func (db *dbMysql) SlaveLagCheck(warning int, critical int)  (int, error) {
 }
 
 // Get current process count
-func (db *dbMysql) ProcessStatusCheck(warning int, critical int)  (int, error) {
-	var totalRows int
+func (db *dbMysql) ProcessStatusCheck(warning uint64, critical uint64)  (int, error) {
+	var totalRows uint64
 	err := db.QueryRow("SELECT COUNT(*) FROM information_schema.PROCESSLIST").Scan(&totalRows)
 	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
 	defer db.Close()
 	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
 	// we need to subtract 1 as we should not count our self
-	realRows := int(totalRows) - 1
+	realRows := totalRows - 1
 	currTholdStatus := myThreshold.CalculateUsage(false, warning, critical, realRows , 0)
 	if currTholdStatus != 0 {
 		err := fmt.Errorf("Process count issue, current processes count %d", realRows)
