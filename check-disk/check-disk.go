@@ -47,6 +47,7 @@ import (
 	myDisk		"github.com/my10c/nagios-plugins-go/disk"
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	myAlert		"github.com/my10c/nagios-plugins-go/alert"
+	//myStats		"github.com/my10c/nagios-plugins-go/stats"
 )
 
 const (
@@ -128,7 +129,7 @@ func main() {
 	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
 	myInit.InitLog()
 	myUtils.SignalHandler()
-	//-->  stats := myStats.New()
+	//--> stats := myStats.New()
 	givenUnit := checkUnit(cfgDict["unit"])
 	checkMode(givenMode)
 	//data := time.Now().Format(time.RFC3339)

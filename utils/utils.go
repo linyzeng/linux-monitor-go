@@ -62,7 +62,7 @@ var (
 		"LOG_DEBUG"		: 7,
 
 	}
-	SyslogFacility =  map[string]int{
+	SyslogFacility = map[string]int{
 		"LOG_MAIL"		: 0,
 		"LOG_DAEMON"	: 1,
 		"LOG_AUTH"		: 2,
@@ -230,7 +230,7 @@ func IsLinuxSystem() {
 // Function print helper to show config value
 func showSectionValue(section string, sectionDict map[string]string) {
 	fmt.Printf("%s:\n", section)
-	for mapKey, mapValue := range sectionDict  {
+	for mapKey, mapValue := range sectionDict {
 		fmt.Printf("\t%s: %s\n", mapKey, mapValue)
 	}
 	return
@@ -278,7 +278,7 @@ func GetSyslog(priority string, facility string) (int, int, error) {
 	} else {
 		if err == nil {
 			err = fmt.Errorf("Given Syslog Facility is incorrect: %s\n", facility)
-		}  else {
+		} else {
 			err = fmt.Errorf("%sGiven Syslog Facility is incorrect: %s\n", err.Error(), facility)
 		}
 	}

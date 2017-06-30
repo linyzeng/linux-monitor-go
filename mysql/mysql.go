@@ -58,7 +58,7 @@ func New(mysqlCfg map[string]string) *dbMysql {
 	// need to create the string tcp(fqdn:port) according to the docs, set host, port, database and option
 	mysql_host_db := fmt.Sprintf("tcp(%s:%s)/%s?parseTime=true", mysqlCfg["hostname"], mysqlCfg["port"], mysqlCfg["database"])
 	// set the full authentication string
-	auth_string :=  mysql_user + mysql_host_db
+	auth_string := mysql_user + mysql_host_db
 	db, err := sql.Open("mysql", auth_string)
 	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
 	// check we can make the connection
@@ -124,7 +124,7 @@ func (db *dbMysql) DropTable(table string) error {
 }
 
 // Get the Slavestatus this will create a map with the current values
-func (db *dbMysql) getSlaveStatus()  (map[string]interface{}, error) {
+func (db *dbMysql) getSlaveStatus() (map[string]interface{}, error) {
 	rows, err := db.Query("SHOW SLAVE STATUS")
 	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
 	// if slave is set we should get exacly 1 row!
@@ -156,11 +156,11 @@ func (db *dbMysql) getSlaveStatus()  (map[string]interface{}, error) {
 		// convert value string to int, if its a int (digits)
 		currValueInt, err := strconv.ParseInt(currValueStr, 10, 64)
 		if err == nil {
-			slaveInfo[name] =  currValueInt
+			slaveInfo[name] = currValueInt
 		} else {
 			// in case of string we need to handle mysql NULL's
 			// we set these to the string "NULL"
-			if len(currValueStr) == 0  {
+			if len(currValueStr) == 0 {
 				slaveInfo[name] = "NULL"
 			} else {
 				slaveInfo[name] = currValueStr
@@ -171,7 +171,7 @@ func (db *dbMysql) getSlaveStatus()  (map[string]interface{}, error) {
 }
 
 // Check Slave_IO_Running and Slave_SQL_Running
-func (db *dbMysql) SlaveStatusCheck()  (int, error) {
+func (db *dbMysql) SlaveStatusCheck() (int, error) {
 	currStatus, err := db.getSlaveStatus()
 	if err != nil {
 		return myGlobal.CRITICAL, err
@@ -188,7 +188,7 @@ func (db *dbMysql) SlaveStatusCheck()  (int, error) {
 }
 
 // Check the Seconds_Behind_Master value
-func (db *dbMysql) SlaveLagCheck(warning uint64, critical uint64)  (int, error) {
+func (db *dbMysql) SlaveLagCheck(warning uint64, critical uint64) (int, error) {
 	currStatus, err := db.getSlaveStatus()
 	if err != nil {
 		return myGlobal.CRITICAL, err
@@ -204,7 +204,7 @@ func (db *dbMysql) SlaveLagCheck(warning uint64, critical uint64)  (int, error) 
 }
 
 // Get current process count
-func (db *dbMysql) ProcessStatusCheck(warning uint64, critical uint64)  (int, error) {
+func (db *dbMysql) ProcessStatusCheck(warning uint64, critical uint64) (int, error) {
 	var totalRows uint64
 	err := db.QueryRow("SELECT COUNT(*) FROM information_schema.PROCESSLIST").Scan(&totalRows)
 	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
@@ -222,7 +222,7 @@ func (db *dbMysql) ProcessStatusCheck(warning uint64, critical uint64)  (int, er
 }
 
 // basic check: read, write and delete
-func (db *dbMysql) BasisCheck(table string, field string,  data string)  (int, error) {
+func (db *dbMysql) BasisCheck(table string, field string, data string) (int, error) {
 	if err := db.CheckWrite(table, field, data); err != nil {
 		db.Close()
 		return myGlobal.CRITICAL, err
@@ -254,7 +254,7 @@ func (db *dbMysql) DropCreateCheck(tablename string) (int, error) {
 }
 
 // read check
-func (db *dbMysql) ReadCheck(table string, field string)  (int, error) {
+func (db *dbMysql) ReadCheck(table string, field string) (int, error) {
 	if err := db.CheckRead(table, field, "%"); err != nil {
 		db.Close()
 		return myGlobal.CRITICAL, err

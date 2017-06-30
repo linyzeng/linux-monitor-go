@@ -53,8 +53,8 @@ import (
 
 // type used for flags in initArgs
 type stringFlag struct {
-	value   string
-	set     bool
+	value	string
+	set		bool
 }
 
 // Function for the stringFlag struct, set the values

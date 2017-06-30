@@ -53,14 +53,14 @@ var (
 // Function to check that the configured thresholds are correct
 func SanityCheck(revert bool, warning string, critical string) (uint64, uint64, bool){
 	var cnt int = 0
-	if  strings.HasSuffix(warning, "%") {
+	if strings.HasSuffix(warning, "%") {
 		percent = true
 		warnThreshold, _ = strconv.ParseUint(warning[:len(warning) - 1], 10, 64)
 		cnt++
 	} else {
 		warnThreshold , _ = strconv.ParseUint(warning, 10, 64)
 	}
-	if  strings.HasSuffix(critical, "%") {
+	if strings.HasSuffix(critical, "%") {
 		percent = true
 		critThreshold, _ = strconv.ParseUint(critical[:len(critical) - 1], 10, 64)
 		cnt++
@@ -112,14 +112,14 @@ func CalculateUsage(revert bool, precent bool, warnThreshold uint64, critThresho
 		if currValue <= critThreshold {
 			return 2
 		}
-		if  currValue <= warnThreshold {
+		if currValue <= warnThreshold {
 			return 1
 		}
 	} else {
 		if currValue >= critThreshold {
 			return 2
 		}
-		if  currValue >= warnThreshold {
+		if currValue >= warnThreshold {
 			return 1
 		}
 	}

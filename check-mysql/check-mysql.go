@@ -66,7 +66,7 @@ var (
 
 func wrongMode(modeSelect string) {
 	fmt.Printf("%s", myGlobal.MyInfo)
-	if  modeSelect == "help" {
+	if modeSelect == "help" {
 		fmt.Printf("Supported modes\n")
 	} else {
 		fmt.Printf("Wrong mode, supported modes:\n")
@@ -104,11 +104,11 @@ func main() {
 	myInit.InitLog()
 	myUtils.SignalHandler()
 	dbCheck := myMySQL.New(cfgDict)
-	//-->  stats := myStats.New()
+	//--> stats := myStats.New()
 	data := time.Now().Format(time.RFC3339)
 	iter, _ := strconv.Atoi(cfgDict["iter"])
 	iterWait, _ := time.ParseDuration(cfgDict["iterwait"])
-	for cnt :=0 ; cnt  < iter ; cnt++ {
+	for cnt :=0 ; cnt < iter ; cnt++ {
 		switch checkMode {
 			case "basic":
 				exitVal, err = dbCheck.BasisCheck(table, field, data)
@@ -144,7 +144,7 @@ func main() {
 	// We only need 1 entry in the stats instead of all iteration like other check need
 	//
 	if exitVal != myGlobal.OK {
-		if myGlobal.DefaultValues["noalert"]  == "false" {
+		if myGlobal.DefaultValues["noalert"] == "false" {
 			myAlert.SendAlert(exitVal, checkMode, err.Error())
 		}
 		exitMsg = fmt.Sprintf("%s %s - Check running mode: %s - Error: %s %s\n",

@@ -33,7 +33,7 @@
 //
 // TODO:
 
-package  alerts
+package alerts
 
 import (
 	"fmt"

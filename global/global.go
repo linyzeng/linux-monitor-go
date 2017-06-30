@@ -51,11 +51,11 @@ const (
 	UNKNOWN = 3
 
 	// [KMG]Bytes units
-	B uint64  = 1
-	KB uint64 = 1024 * B
-	MB uint64 = 1024 * KB
-	GB uint64 = 1024 * MB
-	TB uint64 = 1024 * GB
+	B uint64	= 1
+	KB uint64	= 1024 * B
+	MB uint64	= 1024 * KB
+	GB uint64	= 1024 * MB
+	TB uint64	= 1024 * GB
 )
 
 var (
@@ -135,7 +135,7 @@ var (
 	DefaultSlackIconEmoji	= ":bangbang:"
 
 	// result wording
-    Result = []string{ "OK", "WARNING", "CRITICAL", "UNKNOWN" }
+	Result = []string{ "OK", "WARNING", "CRITICAL", "UNKNOWN" }
 
 	// stats is always optional but has a default value. so this is hardcoded!
 	DefaultStats			map[string]string
