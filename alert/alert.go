@@ -66,7 +66,7 @@ func SendAlert(exitVal int, checkMode string, checkErr string) error {
 		message = fmt.Sprintf("TAG: %s\nHost: %s\n%s: %s\nCheck running mode: %s\nError: %s\n",
 			tagInfo, hostName, myGlobal.MyProgname, errWord, checkMode, checkErr)
 	}
-	// is any of these fails we capture that, hence err could be a ser of errors!
+	// is any of these fails we capture that, hence err could be a set of errors!
 	// Syslog : only if syslog tag was not set to of
 	if myGlobal.DefaultSyslog["syslogtag"] != "off" {
 		result = alertSyslog(message)

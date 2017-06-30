@@ -25,27 +25,28 @@
 //
 // Version		:	0.1
 //
-// Date			:	June 4, 2017
+// Date			:	June 30, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	June 4, 2017	LIS			First Go release
+//	June 30, 2017	LIS			First Go release
 //
-// TODO:
-
+// TODO: write stats
 
 package main
 
 import (
 	"fmt"
 	"os"
-	//"time"
+	"strconv"
+	"strings"
+	"time"
 
 	myInit		"github.com/my10c/nagios-plugins-go/initialize"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	//myDisk		"github.com/my10c/nagios-plugins-go/disk"
+	myDisk		"github.com/my10c/nagios-plugins-go/disk"
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	//myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
+	myAlert		"github.com/my10c/nagios-plugins-go/alert"
 )
 
 const (
@@ -69,6 +70,7 @@ func wrongMode(modeSelect string) {
 	}
 	fmt.Printf("\t diskspace	: checks diskspace.\n")
 	fmt.Printf("\t inodes		: checks inodes.\n")
+	fmt.Printf("\t ro			: checks partition is not read-only mode.\n")
 	os.Exit(3)
 }
 
@@ -105,23 +107,96 @@ func checkMode(givenMode string) {
 	switch givenMode {
 		case "diskspace":
 		case "inode":
+		case "ro":
 		default:
 			wrongMode(givenMode)
 	}
 }
 
 func main() {
+	// working variables
+	var resultVal int
+	var exitVal int = 0
+	var exitMsg string
+	// create emtpy error message
+	err = fmt.Errorf("")
+	// get and setup phase
 	myUtils.IsLinuxSystem()
-	// for mountPoint, diskPtr := range myDisk.New() {
-	// 	fmt.Printf("%s - %s - %d - %s \n",
-	// 		mountPoint, diskPtr.GetType(), diskPtr.GetSize(myGlobal.MB), diskPtr.GetState())
-	//}
 	myGlobal.ExtraInfo = extraInfo
 	myGlobal.MyVersion = CheckVersion
 	cfgFile, givenMode := myInit.InitArgs(cfgRequired)
 	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
-	checkUnit(cfgDict["unit"])
+	myInit.InitLog()
+	myUtils.SignalHandler()
+	//-->  stats := myStats.New()
+	givenUnit := checkUnit(cfgDict["unit"])
 	checkMode(givenMode)
-	fmt.Println(cfgDict)
-	os.Exit(0)
+	//data := time.Now().Format(time.RFC3339)
+	thresHold := fmt.Sprintf(" (W:%s C:%s Unit:%s)", cfgDict["warning"], cfgDict["critical"], cfgDict["unit"])
+	iter, _ := strconv.Atoi(cfgDict["iter"])
+	iterWait, _ := time.ParseDuration(cfgDict["iterwait"])
+	// loop all found disk
+	for mountPoint, diskPtr := range myDisk.New() {
+		// loop times required iterations if errored
+		for cnt :=0 ; cnt < iter ; cnt++ {
+			if cfgDict["disk"] == "" {
+				// need to do all partitions
+				resultVal = diskPtr.CheckIt(givenMode, cfgDict["warning"], cfgDict["critical"], givenUnit)
+			} else {
+				// if disk is set we stop as soon we have a hit, can be mountpoint or device name
+				if (diskPtr.GetDev() == cfgDict["disk"]) || (mountPoint == cfgDict["disk"]) {
+					resultVal = diskPtr.CheckIt(givenMode, cfgDict["warning"], cfgDict["critical"], givenUnit)
+				}
+			}
+			//
+			// TODO write stats here
+			// so we will could get only 1 entry if the result was OK
+			//
+			// got OK, break and go to next partition
+			if resultVal == myGlobal.OK {
+				break
+			} else {
+				// we set the value of exitVal to to the highest just once
+				// so that we get critical if any result is critical
+				// BUG: since test it done `iter` time we should reset if we get an ok
+				if exitVal < resultVal {
+					exitVal = resultVal
+				}
+			}
+			time.Sleep(iterWait * time.Second)
+		}
+		// create the disk message
+		exitMsg = fmt.Sprintf("%s%s%s ",
+			exitMsg, myGlobal.Result[resultVal], diskPtr.StatusMsg(givenMode, givenUnit))
+		if resultVal != myGlobal.OK {
+			err = fmt.Errorf("%s%s%s ",
+				err.Error(), myGlobal.Result[resultVal], diskPtr.StatusMsg(givenMode, givenUnit))
+		}
+		// break if not checking all disks
+		if (diskPtr.GetDev() == cfgDict["disk"]) || (mountPoint == cfgDict["disk"]) {
+			break
+		}
+	}
+	// create final message
+	if givenMode != "ro" {
+		// add the check name and threshold info to the message
+		exitMsg = fmt.Sprintf("%s %s - %s%s\n",
+			strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], exitMsg, thresHold)
+		err = fmt.Errorf("%s%s", err.Error(), thresHold)
+	} else {
+		// add only the check name
+		exitMsg = fmt.Sprintf("%s %s - %s\n",
+			strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], exitMsg)
+		err = fmt.Errorf("%s", err.Error())
+	}
+	// alert on error
+	if exitVal != myGlobal.OK {
+		if myGlobal.DefaultValues["noalert"] == "false" {
+			// add threshold to error message
+			myAlert.SendAlert(exitVal, givenMode, err.Error())
+		}
+	}
+	fmt.Printf("%s", exitMsg)
+	myUtils.LogMsg(fmt.Sprintf("%s", exitMsg))
+	os.Exit(exitVal)
 }

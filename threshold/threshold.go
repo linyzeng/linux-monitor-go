@@ -46,13 +46,13 @@ import (
 
 var (
 	percent bool = false
-	cnt int = 0
 	warnThreshold uint64
 	critThreshold uint64
 )
 
 // Function to check that the configured thresholds are correct
-func SanityCheck(warning string, critical string) (uint64, uint64, bool){
+func SanityCheck(revert bool, warning string, critical string) (uint64, uint64, bool){
+	var cnt int = 0
 	if  strings.HasSuffix(warning, "%") {
 		percent = true
 		warnThreshold, _ = strconv.ParseUint(warning[:len(warning) - 1], 10, 64)
@@ -84,25 +84,44 @@ func SanityCheck(warning string, critical string) (uint64, uint64, bool){
 			os.Exit(1)
 		}
 	}
-	if warnThreshold >= critThreshold {
+	if revert {
+		if warnThreshold <= critThreshold {
 			fmt.Printf("%s", myGlobal.MyInfo)
-		fmt.Printf("Warning threshold must be less than Critical threshold\n")
-		os.Exit(1)
+				fmt.Printf("Critical threshold must be less than Warning threshold\n")
+			os.Exit(1)
+		}
+	} else {
+		if warnThreshold >= critThreshold {
+			fmt.Printf("%s", myGlobal.MyInfo)
+				fmt.Printf("Warning threshold must be less than Critical threshold\n")
+			os.Exit(1)
+		}
 	}
 	return warnThreshold, critThreshold, percent
 }
 
 // Function to check if the value is within threshold
-func CalculateUsage(precent bool, warnThreshold uint64, critThreshold uint64, currValue uint64, totalValue uint64) int {
+func CalculateUsage(revert bool, precent bool, warnThreshold uint64, critThreshold uint64, currValue uint64, totalValue uint64) int {
 	// calculate based on %
 	if precent == true {
-		currValue = (currValue/totalValue) * 100
+		// need to use float to get correct division value
+		// note the value will be down-rounded
+		currValue = uint64((float64(currValue)/float64(totalValue)) * 100)
 	}
-	if currValue >= critThreshold {
-		return 2
-	}
-	if  currValue >= warnThreshold {
-		return 1
+	if revert {
+		if currValue <= critThreshold {
+			return 2
+		}
+		if  currValue <= warnThreshold {
+			return 1
+		}
+	} else {
+		if currValue >= critThreshold {
+			return 2
+		}
+		if  currValue >= warnThreshold {
+			return 1
+		}
 	}
 	return 0
 }

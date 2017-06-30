@@ -36,6 +36,7 @@
 package disk
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
@@ -157,24 +158,24 @@ func (diskPtr *diskType) GetType() string {
 	return diskPtr.fsType
 }
 
-func (diskPtr *diskType) GetSize(unit int) uint64 {
-	return diskPtr.totalSpace/uint64(unit)
+func (diskPtr *diskType) GetSize(unit uint64) uint64 {
+	return diskPtr.totalSpace/unit
 }
 
-func (diskPtr *diskType) GetUse(unit int) uint64 {
-	return diskPtr.totalUse/uint64(unit)
+func (diskPtr *diskType) GetUse(unit uint64) uint64 {
+	return diskPtr.totalUse/unit
 }
 
-func (diskPtr *diskType) GetFree(unit int) uint64 {
-	return diskPtr.totalFree/uint64(unit)
+func (diskPtr *diskType) GetFree(unit uint64) uint64 {
+	return diskPtr.totalFree/unit
 }
 
-func (diskPtr *diskType) GetInodes(unit int) uint64 {
-	return diskPtr.totalInodes/uint64(unit)
+func (diskPtr *diskType) GetInodes(unit uint64) uint64 {
+	return diskPtr.totalInodes/unit
 }
 
-func (diskPtr *diskType) GetFreeInodes(unit int) uint64 {
-	return diskPtr.freeInodes
+func (diskPtr *diskType) GetFreeInodes(unit uint64) uint64 {
+	return diskPtr.freeInodes/unit
 }
 
 func (diskPtr *diskType) GetMountPoint() string {
@@ -190,20 +191,20 @@ func (diskPtr *diskType) GetState() string {
 }
 
 // Function to check available disk space
-func (diskPtr *diskType) CheckFree(warn, crit string, unit int) int {
-	warnThreshold, critThreshold, percent := myThreshold.SanityCheck(warn, crit)
-	return myThreshold.CalculateUsage(percent, warnThreshold, critThreshold,
+func (diskPtr *diskType) CheckFree(warn, crit string, unit uint64) int {
+	warnThreshold, critThreshold, percent := myThreshold.SanityCheck(true, warn, crit)
+	return myThreshold.CalculateUsage(true, percent, warnThreshold, critThreshold,
 		diskPtr.GetFree(unit), diskPtr.GetSize(unit))
 }
 
 // Function to check available inodes if supported by the filesystem
-func (diskPtr *diskType) CheckFreeInode(warn, crit string, unit int) int {
+func (diskPtr *diskType) CheckFreeInode(warn, crit string, unit uint64) int {
 	// if both total inodes and free inodes are zero then the filesystem does use inodes
 	if (diskPtr.GetInodes(unit) == 0) && (diskPtr.GetFreeInodes(unit) == 0) {
 		return 0
 	}
-	warnThreshold, critThreshold, percent := myThreshold.SanityCheck(warn, crit)
-	return myThreshold.CalculateUsage(percent, warnThreshold, critThreshold,
+	warnThreshold, critThreshold, percent := myThreshold.SanityCheck(true, warn, crit)
+	return myThreshold.CalculateUsage(true, percent, warnThreshold, critThreshold,
 		diskPtr.GetInodes(unit), diskPtr.GetFreeInodes(unit))
 }
 
@@ -213,4 +214,33 @@ func (diskPtr *diskType) CheckRO(mntPoint string) int{
 		return 1
 	}
 	return 0
+}
+
+// Function wrapper to the checks
+func (diskPtr *diskType) CheckIt(mode string, warn, crit string, unit uint64) int {
+	var result int = 3
+	switch mode {
+		case "diskspace":
+			result = diskPtr.CheckFree(warn, crit, unit)
+		case "inode":
+			result = diskPtr.CheckFreeInode(warn, crit, unit)
+		case "ro":
+			result = diskPtr.CheckRO(diskPtr.GetMountPoint())
+	}
+	return result
+}
+
+// Function to generate a disk info string
+func (diskPtr *diskType) StatusMsg(mode string, unit uint64) string{
+	var statusMsg string
+	mntPoint := diskPtr.GetMountPoint()
+	switch mode {
+		case "diskspace":
+			statusMsg = fmt.Sprintf("(%s:Free:%d)", mntPoint, diskPtr.GetFree(unit))
+		case "inode":
+			statusMsg = fmt.Sprintf("(%s:Free Inode:%d)", mntPoint, diskPtr.GetFreeInodes(unit))
+		case "ro":
+			statusMsg = fmt.Sprintf("(%s:mount state:%s)", mntPoint, diskPtr.GetState())
+	}
+	return statusMsg
 }

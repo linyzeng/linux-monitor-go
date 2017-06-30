@@ -117,11 +117,11 @@ func main() {
 			case "slavestatus":
 				exitVal, err = dbCheck.SlaveStatusCheck()
 			case "slavelag":
-				warning, critical, _ := myThreshold.SanityCheck(cfgDict["lagwarning"], cfgDict["lagcritical"])
+				warning, critical, _ := myThreshold.SanityCheck(false, cfgDict["lagwarning"], cfgDict["lagcritical"])
 				exitVal, err = dbCheck.SlaveLagCheck(warning, critical)
 				thresHold = fmt.Sprintf(" (W:%d C:%d )", warning, critical)
 			case "process":
-				warning, critical, _ := myThreshold.SanityCheck(cfgDict["processwarning"], cfgDict["processcritical"])
+				warning, critical, _ := myThreshold.SanityCheck(false, cfgDict["processwarning"], cfgDict["processcritical"])
 				exitVal, err = dbCheck.ProcessStatusCheck(warning, critical)
 				thresHold = fmt.Sprintf(" (W:%d C:%d )", warning, critical)
 			case "dropcreate":
@@ -139,12 +139,10 @@ func main() {
 		}
 		time.Sleep(iterWait * time.Second)
 	}
+	//
+	// TODO write stats here
 	// We only need 1 entry in the stats instead of all iteration like other check need
-	// create Stats record if stats == true
-	// if stats.Enable {
-	//		stats.StatsRecord := .. some info and someformat
-	//		stats.CreateRecord()  or stats.WriteStat()
-	// }
+	//
 	if exitVal != myGlobal.OK {
 		if myGlobal.DefaultValues["noalert"]  == "false" {
 			myAlert.SendAlert(exitVal, checkMode, err.Error())
