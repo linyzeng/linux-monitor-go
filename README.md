@@ -1,8 +1,8 @@
 
 ## See check for their release status
-## Current 	: working on stats
-## Next    	: check-disk
-## Released ; check-mysql (minus stats)
+## Current 	: working on next check
+## Next    	: check-memory
+## Released ; check-mysql and check-disks (minus stats)
 
 ## nagios-plugins-go : Nagios plugins written in GO
 
@@ -148,7 +148,7 @@ check-fd status `not started yet` 		: check file descriptors
 
 check-http status `not started yet`		: check http port reply
 
-check-disk status `not started yet`		: check disk space
+check-disk status `first release`		: check disk space
 
 check-load status `not started yet`		: check system load
 
