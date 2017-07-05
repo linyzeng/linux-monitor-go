@@ -47,7 +47,7 @@ import (
 	myZoo		"github.com/my10c/nagios-plugins-go/zookeeper"
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	// myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
-	//myAlert		"github.com/my10c/nagios-plugins-go/alert"
+	myAlert		"github.com/my10c/nagios-plugins-go/alert"
 	//myStats		"github.com/my10c/nagios-plugins-go/stats"
 )
 
@@ -78,10 +78,11 @@ func wrongMode(modeSelect string) {
 
 func main() {
 	// need to be root since the config file wil have passwords
-	//myUtils.IsRoot()
+	myUtils.IsRoot()
 	// var thresHold string = ""
 	var exitMsg string
 	var extraMsg string
+	var zKConn *myZoo.ZkConn
 	// add the extra setup info
 	myGlobal.ExtraInfo = extraInfo
 	myGlobal.MyVersion = CheckVersion
@@ -97,8 +98,14 @@ func main() {
 	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
 	myInit.InitLog()
 	myUtils.SignalHandler()
-	zKConn, _ := myZoo.New(myUtils.StringToSlice(cfgDict["zookeeper"]))
-	defer zKConn.Close()
+	// we need to switch again as broker is a pure zookeeeper call
+	switch checkMode {
+		case "broker":
+			zKConn, _ = myZoo.New(myUtils.StringToSlice(cfgDict["zookeeper"]))
+			defer zKConn.Close()
+		case "topic":
+		case "pubsub":
+	}
 	//--> stats := myStats.New()
 	// data := time.Now().Format(time.RFC3339)
 	iter, _ := strconv.Atoi(cfgDict["iter"])
@@ -132,9 +139,9 @@ func main() {
 	// We only need 1 entry in the stats instead of all iteration like other check need
 	//
 	if exitVal != myGlobal.OK {
-		//if myGlobal.DefaultValues["noalert"] == "false" {
-			//myAlert.SendAlert(exitVal, checkMode, err.Error())
-		//}
+		if myGlobal.DefaultValues["noalert"] == "false" {
+			myAlert.SendAlert(exitVal, checkMode, err.Error())
+		}
 		exitMsg = fmt.Sprintf("%s %s - Check running mode: %s - Error: %s\n",
 			strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], checkMode, err.Error())
 	} else {

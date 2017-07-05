@@ -73,13 +73,13 @@ var (
 
 type State int32
 
-type zkConn struct {
+type ZkConn struct {
 	zkConnecion *zkClass.Conn
 }
 
 // Function to create the zookeeper object then connect to the given zookeeper server
 // we need this to be able to send any command to kafka
-func New(zkServers []string) (*zkConn, error) {
+func New(zkServers []string) (*ZkConn, error) {
 	if len(zkServers) == 0 {
 		zkServers = []string{"127.0.0.1:2181"}
 	}
@@ -87,19 +87,19 @@ func New(zkServers []string) (*zkConn, error) {
 	if err != nil {
 		myUtils.ExitWithNagiosCode(myGlobal.CRITICAL, err)
 	}
-	connection := &zkConn{
+	connection := &ZkConn{
 		zkConnecion	: connectedZK,
 	}
 	return connection, nil
 }
 
 // Function to close a zookeeper connection
-func (zkPtr *zkConn) Close() {
+func (zkPtr *ZkConn) Close() {
 	zkPtr.zkConnecion.Close()
 }
 
 // Function to see if a zookeeper is a leader
-func (zkPtr *zkConn) IsLeader() bool {
+func (zkPtr *ZkConn) IsLeader() bool {
 	if zkPtr.IsFollower() {
 		return false
 	}
@@ -107,13 +107,13 @@ func (zkPtr *zkConn) IsLeader() bool {
 }
 
 // Function to see if a zookeeper is a leader
-func (zkPtr *zkConn) IsFollower() bool {
+func (zkPtr *ZkConn) IsFollower() bool {
 	// TODO
 	return false
 }
 
 // Function to see if a zookeeper is get traffic
-func (zkPtr *zkConn) Status(wantStat string) (string, bool){
+func (zkPtr *ZkConn) Status(wantStat string) (string, bool){
 	if zkPtr.zkConnecion.State().String() == wantStat {
 		return zkPtr.zkConnecion.State().String(), true
 	}
@@ -122,7 +122,7 @@ func (zkPtr *zkConn) Status(wantStat string) (string, bool){
 
 // Function to check current kafka brokers
 // this is not a zookeeper thing but for now in this class
-func (zkPtr *zkConn) CheckKafkaBroker(brokerList []string) (int, error) {
+func (zkPtr *ZkConn) CheckKafkaBroker(brokerList []string) (int, error) {
 	kafkaBroker, _, err := zkPtr.zkConnecion.Children("/brokers/ids")
 	if err != nil {
 		return myGlobal.UNKNOWN, err
