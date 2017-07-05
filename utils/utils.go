@@ -36,6 +36,7 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
@@ -44,6 +45,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strings"
 	"strconv"
 
 	myGlobal "github.com/my10c/nagios-plugins-go/global"
@@ -283,4 +285,18 @@ func GetSyslog(priority string, facility string) (int, int, error) {
 		}
 	}
 	return priorityValue, facilityValue, err
+}
+
+// Function to convert a strings to a slice
+func StringToSlice(args ...string) []string {
+	return strings.Fields(strings.Join(args, " "))
+}
+
+// Function to convert slice of string to a single string
+func SliceToString(array []*string) string {
+	var buffer bytes.Buffer
+	for idx := range array {
+		buffer.WriteString(*array[idx])
+	}
+	return buffer.String()
 }
