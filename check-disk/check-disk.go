@@ -121,6 +121,8 @@ func main() {
 	var exitMsg string
 	// create emtpy error message
 	err = fmt.Errorf("")
+	// need to be root since the config file wil have passwords
+	myUtils.IsRoot()
 	// get and setup phase
 	myUtils.IsLinuxSystem()
 	myGlobal.ExtraInfo = extraInfo
@@ -140,7 +142,7 @@ func main() {
 	for mountPoint, diskPtr := range myDisk.New() {
 		// loop times required iterations if errored
 		for cnt :=0 ; cnt < iter ; cnt++ {
-			if cfgDict["disk"] == "" {
+			if len(cfgDict["disk"]) == 0  {
 				// need to do all partitions
 				resultVal = diskPtr.CheckIt(givenMode, cfgDict["warning"], cfgDict["critical"], givenUnit)
 			} else {
@@ -166,16 +168,23 @@ func main() {
 			}
 			time.Sleep(iterWait * time.Second)
 		}
-		// create the disk message
+		// break if not checking all disks
+		if (diskPtr.GetDev() == cfgDict["disk"]) || (mountPoint == cfgDict["disk"]) {
+			// create the disk message only for the disk
+			exitMsg = fmt.Sprintf("%s%s ",
+				myGlobal.Result[resultVal], diskPtr.StatusMsg(givenMode, givenUnit))
+			if resultVal != myGlobal.OK {
+				err = fmt.Errorf("%s%s%s ",
+					err.Error(), myGlobal.Result[resultVal], diskPtr.StatusMsg(givenMode, givenUnit))
+			}
+			break
+		}
+		// create the disk message appended
 		exitMsg = fmt.Sprintf("%s%s%s ",
 			exitMsg, myGlobal.Result[resultVal], diskPtr.StatusMsg(givenMode, givenUnit))
 		if resultVal != myGlobal.OK {
 			err = fmt.Errorf("%s%s%s ",
 				err.Error(), myGlobal.Result[resultVal], diskPtr.StatusMsg(givenMode, givenUnit))
-		}
-		// break if not checking all disks
-		if (diskPtr.GetDev() == cfgDict["disk"]) || (mountPoint == cfgDict["disk"]) {
-			break
 		}
 	}
 	// create final message

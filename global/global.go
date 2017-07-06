@@ -210,6 +210,7 @@ func init() {
 	DefaultIter["iterwait"]				= strconv.Itoa(DefaultIterWait)
 	// the shared map
 	SharedMap = make(map[string]string)
+	SharedMap["unit"]					= "MB"
 	SharedMap["zookeeperhost"]			= "localhost:2181"
 	SharedMap["kafkahost"]				= "localhost:9092"
 }

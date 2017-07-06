@@ -2,7 +2,7 @@
 ## See check for their release status
 ## Current 	: working on next check
 ## Next    	: check-memory
-## Released ; check-mysql and check-disks (minus stats)
+## Released ; check-mysql, check-kafka (broker only) and check-disks: all minus stats
 
 ## nagios-plugins-go : Nagios plugins written in GO
 
@@ -150,6 +150,8 @@ check-http status `not started yet`		: check http port reply
 
 check-disk status `first release`		: check disk space
 
+check-kafka status `broker mode only`	: check kakfa
+
 check-load status `not started yet`		: check system load
 
 check-memory status `not started yet`	: check available memory
@@ -165,6 +167,9 @@ check-process status `not started yet`	: check if a given process is running, /p
 check-psql status `not started yet`		: check mysql health include slave/replication
 
 Any other that you would like to see? shoot me an email
+
+
+*note*: check-kafka checks to be finished : topic and pubsub
 
 ### How to build
 
