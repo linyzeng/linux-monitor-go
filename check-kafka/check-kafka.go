@@ -44,6 +44,7 @@ import (
 
 	myInit		"github.com/my10c/nagios-plugins-go/initialize"
 	myUtils		"github.com/my10c/nagios-plugins-go/utils"
+	//myKafka		"github.com/my10c/nagios-plugins-go/kafka"
 	myZoo		"github.com/my10c/nagios-plugins-go/zookeeper"
 	myGlobal	"github.com/my10c/nagios-plugins-go/global"
 	// myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
@@ -52,12 +53,12 @@ import (
 )
 
 const (
-	extraInfo = "If `zookeeper` is left empty then it will use localhost and port 2181\n\tBrokers values should be kafka-ids separated by space"
+	extraInfo = "the `brokers` values should be kafka-ids (numbers) separated by spaces."
 	CheckVersion = "0.1"
 )
 
 var (
-	cfgRequired = []string{"zookeeper"}
+	cfgRequired = []string{"zookeeperhost", "kafkahost"}
 	err error
 	exitVal int = 0
 )
@@ -71,7 +72,7 @@ func wrongMode(modeSelect string) {
 	}
 	fmt.Printf("\t broker		: check if all kafka brokers are up.\n")
 	fmt.Printf("\t topic		: check create and delete topic (TODO).\n")
-	fmt.Printf("\t pubsub		: check publish and consumer a messaage. (TODO).\n")
+	fmt.Printf("\t pubsub		: check publish and consume a messaage. (TODO).\n")
 	fmt.Printf("\t showconfig	: show the current configuration and then exit.\n")
 	os.Exit(3)
 }
@@ -91,9 +92,9 @@ func main() {
 		case "broker":
 			cfgRequired = append(cfgRequired, "brokers")
 		case "topic":
-			cfgRequired = append(cfgRequired, "broker", "topic", "kafkahost")
+			cfgRequired = append(cfgRequired, "broker", "topic")
 		case "pubsub":
-			cfgRequired = append(cfgRequired, "broker", "topic", "kafkahost")
+			cfgRequired = append(cfgRequired, "broker", "topic")
 	}
 	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
 	myInit.InitLog()
@@ -101,7 +102,7 @@ func main() {
 	// we need to switch again as broker is a pure zookeeeper call
 	switch checkMode {
 		case "broker":
-			zKConn, _ = myZoo.New(myUtils.StringToSlice(cfgDict["zookeeper"]))
+			zKConn, _ = myZoo.New(myUtils.StringToSlice(cfgDict["zookeeperhost"]))
 			defer zKConn.Close()
 		case "topic":
 		case "pubsub":

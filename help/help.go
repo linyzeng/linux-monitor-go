@@ -57,6 +57,9 @@ func printCfgValues(sectioName string, disableKey string, cfgDict map[string]str
 	}
 	fmt.Printf("\t%s:\n", sectioName)
 	for defaultKey, defaultValue := range cfgDict {
+		if checkDefaultValue, ok := myGlobal.SharedMap[defaultKey]; ok {
+			defaultValue = checkDefaultValue
+		}
 		fmt.Printf("\t  %s: %s\n", defaultKey, defaultValue)
 	}
 }
@@ -71,7 +74,11 @@ func SetupHelp(cfg []string) {
 	color.Yellow(" (used the `-mode help` to see other required key)\n")
 	fmt.Printf("\t%s:\n", myGlobal.MyProgname)
 	for cnt := range cfg {
-		fmt.Printf("\t  %s:\n", cfg[cnt])
+		if defaultValue, ok := myGlobal.SharedMap[cfg[cnt]]; ok {
+			fmt.Printf("\t  %s: %s\n", cfg[cnt], defaultValue)
+		} else {
+			fmt.Printf("\t  %s:\n", cfg[cnt])
+		}
 	}
 	// stats are hardcoded
 	color.HiGreen("# When enable stats (-stats) then the keys below are required, below are the default values.\n")

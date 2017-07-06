@@ -147,6 +147,9 @@ var (
 	IterOptionalKeys		= []string{"iter", "iterwait"}
 	DefaultIterCnt			= 3
 	DefaultIterWait			= 10 // seconds
+
+	// Shared map between checks
+	SharedMap				map[string]string
 )
 
 func init() {
@@ -205,4 +208,8 @@ func init() {
 	DefaultIter = make(map[string]string)
 	DefaultIter["iter"]					= strconv.Itoa(DefaultIterCnt)
 	DefaultIter["iterwait"]				= strconv.Itoa(DefaultIterWait)
+	// the shared map
+	SharedMap = make(map[string]string)
+	SharedMap["zookeeperhost"]			= "localhost:2181"
+	SharedMap["kafkahost"]				= "localhost:9092"
 }

@@ -182,7 +182,15 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 			// assign the value
 			dictCfg[keyName] = cfgValue
 		} else {
-			missingKeys = append(missingKeys, keyName)
+			// important part of the shared map is that the name of the keys can not be the
+			// same across all checks unless the exact default value is valid for these checks
+			// check shared keys
+			if defaultValue, ok := myGlobal.SharedMap[keyName]; ok {
+				dictCfg[keyName] = defaultValue
+			} else {
+				// key is really missing
+				missingKeys = append(missingKeys, keyName)
+			}
 		}
 	}
 	// make sure we have all required configs
