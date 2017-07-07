@@ -36,29 +36,34 @@
 package memory
 
 import (
-//	"fmt"
-//	"io/ioutil"
+	"fmt"
+	"io/ioutil"
+//	"os"
 //	"path/filepath"
-//	"regexp"
-//	"strings"
+	"regexp"
+	"sort"
+	"strings"
+	"strconv"
 //	"syscall"
 //
-//	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-//	myUtils		"github.com/my10c/nagios-plugins-go/utils"
+	myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	myUtils		"github.com/my10c/nagios-plugins-go/utils"
 //	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
 )
 
 const (
+	PROCDIR = "/proc"
 	PROCMEM = "/proc/meminfo"
 	PROCESSCOM = "comm"
 )
 
-type memStruct struct {
+type sysMemStruct struct {
 	memTotal		uint64	`json:"memTotal"`
 	memFree			uint64	`json:"memFree"`
 	memAvailable	uint64	`json:"memAvailable"`
 	buffers			uint64	`json:"buffers"`
-	cached			uint64	`json:"cachedcached"`
+	cached			uint64	`json:"cached"`
+	swapCached		uint64	`json:"swapcached"`
 	swapTotal		uint64	`json:"swapTotal"`
 	swapFree		uint64	`json:"swapTotal"`
 }
@@ -73,86 +78,254 @@ type memStruct struct {
 //		between other 10 processes, Pss is 1 + 20/10 = 3MiB
 
 type processMemStruct struct {
-	processName		string	`json:"procname"`
-	rrsTotal		uint64	`json:"rss"`
-	sharedTotal		uint64	`json:"shared"`
-	privateTotal	uint64	`json:"private"`
-	swapTotal		uint64	`json:"swap"`
-	pssTptal		uint64	`json:"pss"`
+	processName	string	`json:"procname"`
+	rss			uint64	`json:"rss"`
+	pss			uint64	`json:"pss"`
+	shared		uint64	`json:"shared"`
+	private		uint64	`json:"private"`
+	swap		uint64	`json:"swap"`
 }
 
 var (
-	memRegex = `^(MemTotal|MemFree|Cached)`
-	procMemRegex = `^(Rss:|Shared:|Private:|Pss:)`
+	memRegex = `^(MemTotal|MemFree|MemAvailable|Buffers|Cached|SwapCached|SwapTotal|SwapFree)`
+	procMemRegex = `^(Rss:|Pss:|Shared_Clean:|Shared_Dirty:|Private_Clean:|Private_Dirty:|Swap:)`
 )
 
-//func geProcMem() map[string]memStruct {
-//	// working variable
-//	contents, err := ioutil.ReadFile(PROCMOUNT)
-//	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
-//	// create the return map
-//	detectedPartitions := make(map[string]parStruct)
-//	// get all lines and walk one at the time
-//	lines := strings.Split(string(contents), "\n")
-//	for _, line := range(lines) {
-//		if line != "" {
-//			// we need the first 3 fields : device, mountpoint, type and first word of mount (rw or ro)
-//			currDevice := strings.Fields(line)[0]
-//			currMountPoint := strings.Fields(line)[1]
-//			currFSType := strings.Fields(line)[2]
-//			currState := strings.Split(strings.Fields(line)[3], ",")[0]
-//			// we only want those matching parRegex
-//			match := expDev.MatchString(currDevice)
-//			if match {
-//				// check is we have a possible symlink or fullpath
-//				match = expLogics.MatchString(currDevice)
-//				if match {
-//					currDevice, _ = filepath.EvalSymlinks(currDevice)
-//				}
-//				// get the disk/partion info
-//				currPartition.device = currDevice
-//				currPartition.mountpoint = currMountPoint
-//				currPartition.fsType = currFSType
-//				currPartition.mountState = currState
-//				detectedPartitions[currMountPoint] = currPartition
-//			}
-//		}
-//	}
-//	return detectedPartitions
-//}
+// function to get the system memory info
+func getSysMemInfo() *sysMemStruct {
+	// working variable
+	var memTotal		uint64 = 0
+	var memFree			uint64 = 0
+	var memAvailable	uint64 = 0
+	var buffers			uint64 = 0
+	var cached			uint64 = 0
+	var swapCached		uint64 = 0
+	var swapTotal		uint64 = 0
+	var swapFree		uint64 = 0
+	// read the proc file
+	contents, err := ioutil.ReadFile(PROCMEM)
+	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	// prep the regex
+	lineMatch, _ := regexp.Compile(memRegex)
+	// get all lines and walk one at the time
+	lines := strings.Split(string(contents), "\n")
+	for _, line := range(lines) {
+		if len(line) > 0 {
+			// we only want those matching parRegex
+			match := lineMatch.MatchString(line)
+			if match {
+				memName := myUtils.TrimLastChar(strings.Fields(line)[0], ":")
+				memVal, _ := strconv.ParseUint(strings.Fields(line)[1], 10, 64)
+				memUnit := strings.Fields(line)[2]
+				// in case we reading in Mb or Gb, we need Kb
+				switch memUnit {
+					case "Mb" :
+						memVal = memVal *  uint64(1024)
+					case "Gb" :
+						memVal = memVal *  uint64(1024 * 1024)
+				}
+				switch memName {
+					case "MemTotal":
+						memTotal = memVal
+					case "MemFree":
+						memFree = memVal
+					case "MemAvailable":
+						memAvailable = memVal
+					case "Buffers":
+						buffers = memVal
+					case "Cached":
+						cached = memVal
+					case "SwapCached":
+						swapCached = memVal
+					case "SwapTotal":
+						swapTotal = memVal
+					case "SwapFree":
+						swapFree = memVal
+				}
+			}
+		}
+	}
+	sysMemValues := &sysMemStruct {
+		memTotal		: memTotal,
+		memFree			: memFree,
+		memAvailable	: memAvailable,
+		buffers			: buffers,
+		cached			: cached,
+		swapCached		: swapCached,
+		swapTotal		: swapTotal,
+		swapFree		: swapFree,
+	}
+	return sysMemValues
+}
 
-// Function to get the given partition/mount point file system info
-// func getDiskinfo(path string) *diskType {
-// 	fs := syscall.Statfs_t{}
-// 	err := syscall.Statfs(path, &fs)
-// 	if err != nil {
-// 		myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
-// 	}
-// 	disk := &diskType {
-// 		totalSpace	: fs.Blocks * uint64(fs.Bsize),
-// 		totalFree	: fs.Bfree * uint64(fs.Bsize),
-// 		totalUse	: (fs.Blocks * uint64(fs.Bsize)) - (fs.Bfree * uint64(fs.Bsize)),
-// 		totalInodes	: fs.Files,
-// 		freeInodes	: fs.Ffree,
-// 		mountPoint	: path,
-// 	}
-// 	return disk
-// }
+// Function to get a process memory usage info
+func getPidMemInfo(processPid, name string) (*processMemStruct, error) {
+	var err			error
+	var rss			uint64 = 0
+	var pss			uint64 = 0
+	var shared		uint64 = 0
+	var private		uint64 = 0
+	var swap		uint64 = 0
+	// read the smap file
+	contents, err :=  ioutil.ReadFile(fmt.Sprintf("%s/%s/smaps", PROCDIR, processPid))
+	if err != nil {
+		return nil, err
+	}
+	// prep the regex
+	expKeys, _ := regexp.Compile(procMemRegex)
+	// read the lines and add values
+	lines := strings.Split(string(contents), "\n")
+	for _, line := range(lines) {
+		match := expKeys.MatchString(line)
+		if match {
+			keyName := myUtils.TrimLastChar(strings.Fields(line)[0], ":")
+			keyValue, _ := strconv.ParseUint(strings.Fields(line)[1], 10, 64)
+			switch keyName {
+				case "Rss":
+						rss = rss + keyValue
+				case "Pss":
+						pss = pss + keyValue
+				case "Shared_Clean":
+						shared = shared + keyValue
+				case "Shared_Dirty":
+						shared = shared + keyValue
+				case "Private_Clean":
+						private = private + keyValue
+				case "Private_Dirty":
+						private = private + keyValue
+				case "Sawp":
+						swap = swap + keyValue
+			}
+		}
+	}
+	procMem := &processMemStruct {
+		processName : name,
+		rss		: rss,
+		pss		: pss,
+		shared	: shared,
+		private	: private,
+		swap	: swap,
+	}
+	return procMem, nil
+}
 
-// Function to get the available disks information
-// func New() map[string]*diskType {
-// 	// create the disk/partition map
-// 	detectedPart := make(map[string]*diskType)
-// 	// will return empty map if no valid disk/partition was found
-// 	for mntPoint, partInfo := range getPartitions() {
-// 		currDisk := getDiskinfo(mntPoint)
-// 		if currDisk == nil {
-// 			return nil
-// 		}
-// 		currDisk.device = partInfo.device
-// 		currDisk.fsType = partInfo.fsType
-// 		currDisk.mountState = partInfo.mountState
-// 		detectedPart[mntPoint] = currDisk
-// 	}
-// 	return detectedPart
-// }
+// Function to get memory usage of the given processes
+func getProcessesMemInfo() map[string]*processMemStruct {
+	// create the map
+	allProcessMemInfo := make(map[string]*processMemStruct)
+	procIDs, _ := ioutil.ReadDir(PROCDIR)
+	for _, f := range procIDs {
+		// make sure we its a directory
+		if f.IsDir() {
+			baseName := f.Name()
+			// the directory has to be an int and greater then 300
+			// the info about the "RESERVED_PIDS" with default value of 300 can be found in kernel/pid.c
+			if pidVal, err := strconv.Atoi(baseName); err == nil {
+				if pidVal > 300 {
+					// get the process name,
+					if pidCommFile, err :=  ioutil.ReadFile(fmt.Sprintf("%s/%s/comm", PROCDIR, baseName)); err == nil {
+						commLines := strings.Split(string(pidCommFile), "\n")
+						for _, commName := range (commLines) {
+							if len(commName) > 0 {
+								// any process name with '/' we skip since these are memory save
+								if ! strings.ContainsAny(commName, "/") {
+									// get the process meminfo
+									processMemInfo, err := getPidMemInfo(baseName, commName)
+									if err == nil {
+										allProcessMemInfo[commName] = processMemInfo
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return allProcessMemInfo
+}
+
+// Function to get the system and processes memory info
+func New() (*sysMemStruct, map[string]*processMemStruct) {
+	return getSysMemInfo(), getProcessesMemInfo()
+}
+
+// Function to get the process commmand name
+func (memPtr *processMemStruct) Name() string {
+			return memPtr.processName
+}
+
+// Function to get the RSS usage
+func (memPtr *processMemStruct) Rss() uint64 {
+	return memPtr.rss
+}
+
+// Function to get the PSS usage
+func (memPtr *processMemStruct) Pss() uint64 {
+	return memPtr.pss
+}
+
+// Function to get the SHARED usage
+func (memPtr *processMemStruct) Shared() uint64 {
+	return memPtr.shared
+}
+
+// Function to get the PRIVATE usage
+func (memPtr *processMemStruct) Private() uint64 {
+	return memPtr.private
+}
+
+// Function to get the SWAP usage
+func (memPtr *processMemStruct) Swap() uint64 {
+	return memPtr.swap
+}
+
+// Function to get a process's memory type usage
+func (memPtr *processMemStruct) GetVal(memType string) (uint64, error) {
+	switch memType {
+		case "rss":
+			return memPtr.rss, nil
+		case "pss":
+			return memPtr.pss, nil
+		case "shared":
+			return memPtr.shared, nil
+		case "private":
+			return memPtr.private, nil
+		case "swap":
+			return memPtr.swap, nil
+	}
+	err := fmt.Errorf("memType not supported: %s", memType)
+	return  666, err
+}
+
+// function to get the top memory usage by type limit by thge given count
+func GetTop(count int, memType string, allProcs map[string]*processMemStruct) string {
+	var workList []*processMemStruct
+	var topList string
+	for  _, val := range allProcs {
+		workList = append(workList, val)
+	}
+
+	sort.Slice(workList, func(i, j int) bool {
+		switch memType {
+			case "rss":
+				return workList[i].Rss() > workList[j].Rss()
+			case "pss":
+				return workList[i].Pss() > workList[j].Pss()
+			case "shared":
+				return workList[i].Shared() > workList[j].Shared()
+			case "private":
+				return workList[i].Private() > workList[j].Private()
+			case "swap":
+				return workList[i].Swap() > workList[j].Swap()
+		}
+		return false
+	})
+
+	for cnt := 0 ; cnt < count ; cnt++ {
+		val, _ := workList[cnt].GetVal(memType)
+		topList = fmt.Sprintf("%s %s:%v ", topList, workList[cnt].Name(), val)
+	}
+	fmt.Printf("%s\n", topList)
+	return topList
+}

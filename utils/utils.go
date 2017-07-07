@@ -300,3 +300,11 @@ func SliceToString(array []*string) string {
 	}
 	return buffer.String()
 }
+
+// Functionn to remove the last char (given) of a given string
+func TrimLastChar(givenString, suffix string) string {
+	if strings.HasSuffix(givenString, suffix) {
+        givenString = givenString[:len(givenString)-len(suffix)]
+    }
+	return givenString
+}
