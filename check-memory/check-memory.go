@@ -67,8 +67,8 @@ func wrongMode(modeSelect string) {
 	} else {
 		fmt.Printf("Wrong mode, supported modes:\n")
 	}
-	fmt.Printf("\t memory       : checks current memory usage, requires the configs: `critical` and `warning`.\n")
-	fmt.Printf("\t swap         : checks current swap usage, requires the configs: `critical` and `warning`.\n")
+	fmt.Printf("\t memory       : checks current memory usage, requires the configs: `memcritical` and `memwarning`.\n")
+	fmt.Printf("\t swap         : checks current swap usage, requires the configs: `memcritical` and `memwarning`.\n")
 	fmt.Printf("\t system       : show the current system memory status.\n")
 	fmt.Printf("\t top-memory   : show top process memory usage, optional the config `topcount`\n")
 	fmt.Printf("\t top-rss      : show top process memory usage, optional the config `topcount`\n")
@@ -116,7 +116,7 @@ func checkMode(givenMode string) {
 
 func main() {
 	// working variables
-	// var resultVal int
+	var usePercent bool = false
 	var topCount int
 	var exitVal int = 0
 	var exitMsg string
@@ -131,7 +131,7 @@ func main() {
 	cfgFile, givenMode := myInit.InitArgs(cfgRequired)
 	switch givenMode {
 	case "memory", "swap":
-		cfgRequired = append(cfgRequired, "critical", "warning")
+		cfgRequired = append(cfgRequired, "memcritical", "memwarning")
 	case "top-memory", "top-rss", "top-private", "top-swap":
 		cfgRequired = append(cfgRequired, "topcount")
 	}
@@ -142,7 +142,10 @@ func main() {
 	givenUnit := checkUnit(cfgDict["unit"])
 	checkMode(givenMode)
 	//data := time.Now().Format(time.RFC3339)
-	// thresHold := fmt.Sprintf(" (W:%s C:%s Unit:%s)", cfgDict["warning"], cfgDict["critical"], cfgDict["unit"])
+	thresHold := fmt.Sprintf(" (W:%s C:%s Unit:%s)", cfgDict["memwarning"], cfgDict["memcritical"], cfgDict["unit"])
+	if strings.HasSuffix(cfgDict["memwarning"], "%") {
+		usePercent = true
+	}
 	iter, _ := strconv.Atoi(cfgDict["iter"])
 	iterWait, _ := time.ParseDuration(cfgDict["iterwait"])
 	if strings.HasPrefix(givenMode, "top") {
@@ -153,7 +156,21 @@ func main() {
 	for cnt := 0; cnt < iter; cnt++ {
 		switch givenMode {
 		case "memory":
+			exitVal = systemMemInfo.CheckFreeMem(cfgDict["memwarning"], cfgDict["memcritical"])
+			exitMsg = fmt.Sprintf("(Memory Total:%s, Free:%s, Usage:%s)%s",
+				strconv.FormatUint(systemMemInfo.Total(), 10), strconv.FormatUint(systemMemInfo.RealFree(), 10),
+				strconv.FormatUint(systemMemInfo.RealUsage(), 10), thresHold)
+			if usePercent {
+				exitMsg = fmt.Sprintf("%s (Usage %d%%)", exitMsg, systemMemInfo.UsagePercent())
+			}
 		case "swap":
+			exitVal = systemMemInfo.CheckFreeSwap(cfgDict["memwarning"], cfgDict["memcritical"])
+			exitMsg = fmt.Sprintf("(Swap Total:%s, Free:%s, Usage:%s)%s",
+				strconv.FormatUint(systemMemInfo.Swap(), 10), strconv.FormatUint(systemMemInfo.FreeSwap(), 10),
+				strconv.FormatUint(systemMemInfo.SwapUsage(), 10), thresHold)
+			if usePercent {
+				exitMsg = fmt.Sprintf("%s (Usage %d%%)", exitMsg, systemMemInfo.SwapUsagePercent())
+			}
 		case "system":
 			exitMsg = systemMemInfo.Show()
 		case "top-memory", "top-rss":

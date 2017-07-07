@@ -38,17 +38,14 @@ package memory
 import (
 	"fmt"
 	"io/ioutil"
-	//	"os"
-	//	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
-	//	"syscall"
-	//
+
 	myGlobal "github.com/my10c/nagios-plugins-go/global"
+	myThreshold "github.com/my10c/nagios-plugins-go/threshold"
 	myUtils "github.com/my10c/nagios-plugins-go/utils"
-	//	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
 )
 
 const (
@@ -363,6 +360,10 @@ func (sysMemPtr *sysMemStruct) FreeSwap() uint64 {
 	return sysMemPtr.swapFree
 }
 
+func (sysMemPtr *sysMemStruct) SwapUsage() uint64 {
+	return sysMemPtr.swapTotal - sysMemPtr.swapFree
+}
+
 // function to show current system memory
 func (sysMemPtr *sysMemStruct) Show() string {
 	var sysMemInfo string
@@ -375,4 +376,42 @@ func (sysMemPtr *sysMemStruct) Show() string {
 	sysMemInfo = fmt.Sprintf("%sTotalSwap    %s\n", sysMemInfo, strconv.FormatUint(sysMemPtr.Swap(), 10))
 	sysMemInfo = fmt.Sprintf("%sFreeSwap     %s\n", sysMemInfo, strconv.FormatUint(sysMemPtr.FreeSwap(), 10))
 	return sysMemInfo
+}
+
+// Calculate the real fee == Free + Cached
+func (sysMemPtr *sysMemStruct) RealFree() uint64 {
+	return sysMemPtr.Free() + sysMemPtr.Cached()
+}
+
+// Calculate the real usage == Total - RealFree
+func (sysMemPtr *sysMemStruct) RealUsage() uint64 {
+	return sysMemPtr.Total() - sysMemPtr.RealFree()
+}
+
+// Function to check available memory
+func (sysMemPtr *sysMemStruct) CheckFreeMem(warn, crit string) int {
+	warnThreshold, critThreshold, percent := myThreshold.SanityCheck(false, warn, crit)
+	return myThreshold.CalculateUsage(false, percent, warnThreshold, critThreshold,
+		sysMemPtr.RealUsage(), sysMemPtr.Total())
+}
+
+// Function to check available swap
+func (sysMemPtr *sysMemStruct) CheckFreeSwap(warn, crit string) int {
+	warnThreshold, critThreshold, percent := myThreshold.SanityCheck(false, warn, crit)
+	return myThreshold.CalculateUsage(false, percent, warnThreshold, critThreshold,
+		sysMemPtr.SwapUsage(), sysMemPtr.Swap())
+}
+
+// Function to get the usage in percent
+func (sysMemPtr *sysMemStruct) UsagePercent() int {
+	return int((float64(sysMemPtr.RealUsage()) / float64(sysMemPtr.Total())) * 100)
+}
+
+// Function to get the swapusage in percent
+func (sysMemPtr *sysMemStruct) SwapUsagePercent() int {
+	// capture devided by nul id there is no swap setup
+	if sysMemPtr.Swap() == 0 {
+		return 0
+	}
+	return int((float64(sysMemPtr.SwapUsage()) / float64(sysMemPtr.Swap())) * 100)
 }

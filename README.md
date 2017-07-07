@@ -1,8 +1,8 @@
 
 ## See check for their release status
 ## Current 	: working on next check
-## Next    	: check-memory
-## Released ; check-mysql, check-kafka (broker only) and check-disks: all minus stats
+## Next    	: check-network
+## Released ; check-mysql, check-kafka (broker only), check-disks, check-memory: all minus stats
 
 ## nagios-plugins-go : Nagios plugins written in GO
 
@@ -154,11 +154,11 @@ check-kafka status `broker mode only`	: check kakfa
 
 check-load status `not started yet`		: check system load
 
-check-memory status `not started yet`	: check available memory
+check-memory status `first release`		: check available memory
 
 check-mysql status `first release`		: check mysql health include slave/replication
 
-check-network status `not started yet`	: check network status such as TX, RX and error
+check-network status `in progress`		: check network status such as TX, RX and error
 
 check-nginx status `not started yet`	: check nginx status
 
