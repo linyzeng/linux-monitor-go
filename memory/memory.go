@@ -281,7 +281,7 @@ func (memPtr *processMemStruct) Swap() uint64 {
 // Function to get a process's memory type usage
 func (memPtr *processMemStruct) GetVal(memType string) (uint64, error) {
 	switch memType {
-	case "rss":
+	case "rss", "memory":
 		return memPtr.rss, nil
 	case "pss":
 		return memPtr.pss, nil
@@ -306,7 +306,7 @@ func GetTop(count int, memType string, allProcs map[string]*processMemStruct) st
 
 	sort.Slice(workList, func(i, j int) bool {
 		switch memType {
-		case "rss":
+		case "rss", "memory":
 			return workList[i].Rss() > workList[j].Rss()
 		case "pss":
 			return workList[i].Pss() > workList[j].Pss()

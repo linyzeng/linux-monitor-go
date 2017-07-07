@@ -10,8 +10,8 @@ if (( $# <= 0 )) ; then
 else
 	_plugin=$1
 	shift
-	#${GOPATH}/bin/$_plugin $*
-	${GOPATH}/bin/$_plugin	\
+	go build -i -v  -ldflags '-w -s' -o ${GOPATH}/bin/$_plugin github.com/my10c/nagios-plugins-go/$_plugin
+	sudo ${GOPATH}/bin/$_plugin	\
 		-config ${GOPATH}/src/github.com/my10c/nagios-plugins-go/etc/nagios-plugins.yaml $*
 	exit $?
 fi

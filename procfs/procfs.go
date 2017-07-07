@@ -25,28 +25,30 @@
 //
 // Version		:	0.1
 //
-// Date			:	June 4, 2017
+// Date			:	July 1, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	June 4, 2017	LIS			First Go release
+//	July 1, 2017	LIS			First Go release
 //
-// TODO: need to also check uptime and hence a uptime in config and default to 5 min?
+// TODO:
 
-package main
+package procfs
 
-//import (
-//	"fmt"
-//	"os"
-//	"time"
-//
-//	myInit		"github.com/my10c/nagios-plugins-go/initialize"
-//	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-//	myMySQL		"github.com/my10c/nagios-plugins-go/mysql"
-//	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-//	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
-//)
+// https://github.com/prometheus/procfs
+// https://unix.stackexchange.com/questions/7870/how-to-check-how-long-a-process-has-been-running
 
-func main() {
-	return
-}
+// SYS:
+// Meminfo
+// Stat
+// Uptime
+// Zoneinfo
+// Loadavg
+// Partitions
+
+// PID:
+// Comm
+// Cmdline
+// Smaps
+// Stat
+// Limits

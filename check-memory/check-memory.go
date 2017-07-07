@@ -38,6 +38,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -58,6 +59,7 @@ var (
 	cfgRequired = []string{"unit"}
 	err         error
 	exitVal     int = 0
+	dblSpace        = `[\s\p{Zs}]{2,}`
 )
 
 func wrongMode(modeSelect string) {
@@ -68,7 +70,7 @@ func wrongMode(modeSelect string) {
 		fmt.Printf("Wrong mode, supported modes:\n")
 	}
 	fmt.Printf("\t memory       : checks current memory usage, requires the configs: `memcritical` and `memwarning`.\n")
-	fmt.Printf("\t swap         : checks current swap usage, requires the configs: `memcritical` and `memwarning`.\n")
+	fmt.Printf("\t swap         : checks current swap usage, requires the configs: `swapcritical` and `swapwarning`.\n")
 	fmt.Printf("\t system       : show the current system memory status.\n")
 	fmt.Printf("\t top-memory   : show top process memory usage, optional the config `topcount`\n")
 	fmt.Printf("\t top-rss      : show top process memory usage, optional the config `topcount`\n")
@@ -130,8 +132,10 @@ func main() {
 	myGlobal.MyVersion = CheckVersion
 	cfgFile, givenMode := myInit.InitArgs(cfgRequired)
 	switch givenMode {
-	case "memory", "swap":
+	case "memory":
 		cfgRequired = append(cfgRequired, "memcritical", "memwarning")
+	case "swap":
+		cfgRequired = append(cfgRequired, "swapcritical", "swapwarning")
 	case "top-memory", "top-rss", "top-private", "top-swap":
 		cfgRequired = append(cfgRequired, "topcount")
 	}
@@ -151,6 +155,7 @@ func main() {
 	if strings.HasPrefix(givenMode, "top") {
 		topCount, _ = strconv.Atoi(cfgDict["topcount"])
 	}
+	regexRemove := regexp.MustCompile(dblSpace)
 	// Get the memory infos
 	systemMemInfo, processMemInfo := myMemory.New(givenUnit)
 	for cnt := 0; cnt < iter; cnt++ {
@@ -172,15 +177,14 @@ func main() {
 				exitMsg = fmt.Sprintf("%s (Usage %d%%)", exitMsg, systemMemInfo.SwapUsagePercent())
 			}
 		case "system":
-			exitMsg = systemMemInfo.Show()
-		case "top-memory", "top-rss":
-			exitMsg = myMemory.GetTop(topCount, "rss", processMemInfo)
-			break
-		case "top-private":
-			exitMsg = myMemory.GetTop(topCount, "private", processMemInfo)
-			break
-		case "top-swap":
-			exitMsg = myMemory.GetTop(topCount, "swap", processMemInfo)
+			exitMsg = fmt.Sprintf("\t(Unit %s)%s", cfgDict["unit"], systemMemInfo.Show())
+		case "top-memory", "top-rss", "top-private", "top-swap":
+			// remove the top- string as that is an invalid option for the memory class
+			cleanedMode := strings.Replace(givenMode, "top-", "", -1)
+			// output one line per process info, todo so remove the double space then replace single space with carriage-return
+			cleanedInfo := strings.Replace(regexRemove.ReplaceAllString(myMemory.GetTop(topCount, cleanedMode, processMemInfo), " "), " ", "\n", -1)
+			exitMsg = fmt.Sprintf("(Unit %s)\n%s", cfgDict["unit"], cleanedInfo)
+			// its a show fucntion so we breal out of the loop
 			break
 		case "showconfig":
 			myUtils.ShowMap(cfgDict)
@@ -188,6 +192,7 @@ func main() {
 		default:
 			wrongMode(givenMode)
 		}
+		// TODO write stats here
 		// if we get an OK then exit no need to do all iterations
 		if exitVal == myGlobal.OK {
 			break
