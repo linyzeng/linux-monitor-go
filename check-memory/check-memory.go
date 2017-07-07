@@ -32,30 +32,30 @@
 //	June 4, 2017	LIS			First Go release
 //
 // TODO:
-//	_, momo := myMemory.New()
-//	myMemory.GetTop( 10 , "rss", momo)
 
 package main
 
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	myGlobal "github.com/my10c/nagios-plugins-go/global"
 	myInit "github.com/my10c/nagios-plugins-go/initialize"
 	myMemory "github.com/my10c/nagios-plugins-go/memory"
-	myThreshold "github.com/my10c/nagios-plugins-go/threshold"
+	// myThreshold "github.com/my10c/nagios-plugins-go/threshold"
 	myUtils "github.com/my10c/nagios-plugins-go/utils"
 )
 
 const (
-	extraInfo    = "Requires the warning and critical thresholds\n\t\tEmpty unit defaults to MB"
+	extraInfo    = "\tEmpty unit defaults to MB"
 	CheckVersion = "0.1"
 )
 
 var (
-	cfgRequired = []string{"critical", "warning", "unit"}
+	cfgRequired = []string{"unit"}
 	err         error
 	exitVal     int = 0
 )
@@ -67,12 +67,14 @@ func wrongMode(modeSelect string) {
 	} else {
 		fmt.Printf("Wrong mode, supported modes:\n")
 	}
-	fmt.Printf("\t memory		: checks current memory usage.\n")
-	fmt.Printf("\t swap			: checks current swap usage.\n")
-	fmt.Printf("\t system		: show the current system memory status.\n")
-	fmt.Printf("\t top-rss		: show top process memory usage.\n")
-	fmt.Printf("\t top-private	: show top process private memory usage.\n")
-	fmt.Printf("\t top-swap	    : show top process swap memory usage.\n")
+	fmt.Printf("\t memory       : checks current memory usage, requires the configs: `critical` and `warning`.\n")
+	fmt.Printf("\t swap         : checks current swap usage, requires the configs: `critical` and `warning`.\n")
+	fmt.Printf("\t system       : show the current system memory status.\n")
+	fmt.Printf("\t top-memory   : show top process memory usage, optional the config `topcount`\n")
+	fmt.Printf("\t top-rss      : show top process memory usage, optional the config `topcount`\n")
+	fmt.Printf("\t top-private  : show top process private memory usage, optional the config `topcount`\n")
+	fmt.Printf("\t top-swap     : show top process swap memory usage, optional the config `topcount`\n")
+	fmt.Printf("\t showconfig   : show the current configuration and then exit.\n")
 	os.Exit(3)
 }
 
@@ -87,18 +89,17 @@ func wrongUnit(confUnit string) {
 }
 
 func checkUnit(unit string) uint64 {
-	var unitBytes uint64
+	// since everything is in KB
+	var unitBytes uint64 = 1
 	switch unit {
-	case "":
-		unitBytes = myGlobal.MB
-	case "KB":
-		unitBytes = myGlobal.KB
+	case "", "KB":
+		unitBytes = 1
 	case "MB":
-		unitBytes = myGlobal.MB
+		unitBytes = myGlobal.KB
 	case "GB":
-		unitBytes = myGlobal.GB
+		unitBytes = myGlobal.MB
 	case "TB":
-		unitBytes = myGlobal.TB
+		unitBytes = myGlobal.GB
 	default:
 		wrongUnit(unit)
 	}
@@ -107,12 +108,7 @@ func checkUnit(unit string) uint64 {
 
 func checkMode(givenMode string) {
 	switch givenMode {
-	case "memory":
-	case "swap":
-	case "system":
-	case "top-rss":
-	case "top-private":
-	case "ctop-swap":
+	case "memory", "swap", "system", "top-memory", "top-rss", "top-private", "top-swap", "show-config":
 	default:
 		wrongMode(givenMode)
 	}
@@ -120,7 +116,8 @@ func checkMode(givenMode string) {
 
 func main() {
 	// working variables
-	var resultVal int
+	// var resultVal int
+	var topCount int
 	var exitVal int = 0
 	var exitMsg string
 	// create emtpy error message
@@ -132,6 +129,12 @@ func main() {
 	myGlobal.ExtraInfo = extraInfo
 	myGlobal.MyVersion = CheckVersion
 	cfgFile, givenMode := myInit.InitArgs(cfgRequired)
+	switch givenMode {
+	case "memory", "swap":
+		cfgRequired = append(cfgRequired, "critical", "warning")
+	case "top-memory", "top-rss", "top-private", "top-swap":
+		cfgRequired = append(cfgRequired, "topcount")
+	}
 	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
 	myInit.InitLog()
 	myUtils.SignalHandler()
@@ -139,77 +142,45 @@ func main() {
 	givenUnit := checkUnit(cfgDict["unit"])
 	checkMode(givenMode)
 	//data := time.Now().Format(time.RFC3339)
-	thresHold := fmt.Sprintf(" (W:%s C:%s Unit:%s)", cfgDict["warning"], cfgDict["critical"], cfgDict["unit"])
+	// thresHold := fmt.Sprintf(" (W:%s C:%s Unit:%s)", cfgDict["warning"], cfgDict["critical"], cfgDict["unit"])
 	iter, _ := strconv.Atoi(cfgDict["iter"])
 	iterWait, _ := time.ParseDuration(cfgDict["iterwait"])
-	// loop all found disk
-	for mountPoint, diskPtr := range myDisk.New() {
-		// loop times required iterations if errored
-		for cnt := 0; cnt < iter; cnt++ {
-			if len(cfgDict["disk"]) == 0 {
-				// need to do all partitions
-				resultVal = diskPtr.CheckIt(givenMode, cfgDict["warning"], cfgDict["critical"], givenUnit)
-			} else {
-				// if disk is set we stop as soon we have a hit, can be mountpoint or device name
-				if (diskPtr.GetDev() == cfgDict["disk"]) || (mountPoint == cfgDict["disk"]) {
-					resultVal = diskPtr.CheckIt(givenMode, cfgDict["warning"], cfgDict["critical"], givenUnit)
-				}
-			}
-			//
-			// TODO write stats here
-			// so we will could get only 1 entry if the result was OK
-			//
-			// got OK, break and go to next partition
-			if resultVal == myGlobal.OK {
-				break
-			} else {
-				// we set the value of exitVal to to the highest just once
-				// so that we get critical if any result is critical
-				// BUG: since test it done `iter` time we should reset if we get an ok
-				if exitVal < resultVal {
-					exitVal = resultVal
-				}
-			}
-			time.Sleep(iterWait * time.Second)
+	if strings.HasPrefix(givenMode, "top") {
+		topCount, _ = strconv.Atoi(cfgDict["topcount"])
+	}
+	// Get the memory infos
+	systemMemInfo, processMemInfo := myMemory.New(givenUnit)
+	for cnt := 0; cnt < iter; cnt++ {
+		switch givenMode {
+		case "memory":
+		case "swap":
+		case "system":
+			exitMsg = systemMemInfo.Show()
+		case "top-memory", "top-rss":
+			exitMsg = myMemory.GetTop(topCount, "rss", processMemInfo)
+			break
+		case "top-private":
+			exitMsg = myMemory.GetTop(topCount, "private", processMemInfo)
+			break
+		case "top-swap":
+			exitMsg = myMemory.GetTop(topCount, "swap", processMemInfo)
+			break
+		case "showconfig":
+			myUtils.ShowMap(cfgDict)
+			myUtils.ShowMap(nil)
+		default:
+			wrongMode(givenMode)
 		}
-		// break if not checking all disks
-		if (diskPtr.GetDev() == cfgDict["disk"]) || (mountPoint == cfgDict["disk"]) {
-			// create the disk message only for the disk
-			exitMsg = fmt.Sprintf("%s%s ",
-				myGlobal.Result[resultVal], diskPtr.StatusMsg(givenMode, givenUnit))
-			if resultVal != myGlobal.OK {
-				err = fmt.Errorf("%s%s%s ",
-					err.Error(), myGlobal.Result[resultVal], diskPtr.StatusMsg(givenMode, givenUnit))
-			}
+		// if we get an OK then exit no need to do all iterations
+		if exitVal == myGlobal.OK {
 			break
 		}
-		// create the disk message appended
-		exitMsg = fmt.Sprintf("%s%s%s ",
-			exitMsg, myGlobal.Result[resultVal], diskPtr.StatusMsg(givenMode, givenUnit))
-		if resultVal != myGlobal.OK {
-			err = fmt.Errorf("%s%s%s ",
-				err.Error(), myGlobal.Result[resultVal], diskPtr.StatusMsg(givenMode, givenUnit))
-		}
+		time.Sleep(iterWait * time.Second)
 	}
-	// create final message
-	if givenMode != "ro" {
-		// add the check name and threshold info to the message
-		exitMsg = fmt.Sprintf("%s %s - %s%s\n",
-			strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], exitMsg, thresHold)
-		err = fmt.Errorf("%s%s", err.Error(), thresHold)
-	} else {
-		// add only the check name
-		exitMsg = fmt.Sprintf("%s %s - %s\n",
-			strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], exitMsg)
-		err = fmt.Errorf("%s", err.Error())
-	}
-	// alert on error
-	if exitVal != myGlobal.OK {
-		if myGlobal.DefaultValues["noalert"] == "false" {
-			// add threshold to error message
-			myAlert.SendAlert(exitVal, givenMode, err.Error())
-		}
-	}
+
+	// add the check name
+	exitMsg = fmt.Sprintf("%s %s - %s\n",
+		strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], exitMsg)
 	fmt.Printf("%s", exitMsg)
 	myUtils.LogMsg(fmt.Sprintf("%s", exitMsg))
 	os.Exit(exitVal)

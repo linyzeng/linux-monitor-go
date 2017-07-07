@@ -42,24 +42,24 @@ import (
 	"strings"
 	"time"
 
-	myInit		"github.com/my10c/nagios-plugins-go/initialize"
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	myDisk		"github.com/my10c/nagios-plugins-go/disk"
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	myAlert		"github.com/my10c/nagios-plugins-go/alert"
+	myAlert "github.com/my10c/nagios-plugins-go/alert"
+	myDisk "github.com/my10c/nagios-plugins-go/disk"
+	myGlobal "github.com/my10c/nagios-plugins-go/global"
+	myInit "github.com/my10c/nagios-plugins-go/initialize"
+	myUtils "github.com/my10c/nagios-plugins-go/utils"
 	//myStats		"github.com/my10c/nagios-plugins-go/stats"
 )
 
 const (
-	field = "timestamp"
-	extraInfo = "Requires the warning and critical thresholds\n\t\tEmpty unit defaults to MB and empty disk defaults to all disks"
+	field        = "timestamp"
+	extraInfo    = "Requires the warning and critical thresholds\n\t\tEmpty unit defaults to MB and empty disk defaults to all disks"
 	CheckVersion = "0.1"
 )
 
 var (
 	cfgRequired = []string{"critical", "warning", "disk", "unit"}
-	err error
-	exitVal int = 0
+	err         error
+	exitVal     int = 0
 )
 
 func wrongMode(modeSelect string) {
@@ -69,9 +69,9 @@ func wrongMode(modeSelect string) {
 	} else {
 		fmt.Printf("Wrong mode, supported modes:\n")
 	}
-	fmt.Printf("\t diskspace	: checks diskspace.\n")
-	fmt.Printf("\t inodes		: checks inodes.\n")
-	fmt.Printf("\t ro			: checks partition is not read-only mode.\n")
+	fmt.Printf("\t diskspace : checks diskspace.\n")
+	fmt.Printf("\t inodes    : checks inodes.\n")
+	fmt.Printf("\t ro        : checks partition is not read-only mode.\n")
 	os.Exit(3)
 }
 
@@ -88,29 +88,29 @@ func wrongUnit(confUnit string) {
 func checkUnit(unit string) uint64 {
 	var unitBytes uint64
 	switch unit {
-		case "":
-			unitBytes = myGlobal.MB
-		case "KB":
-			unitBytes = myGlobal.KB
-		case "MB":
-			unitBytes = myGlobal.MB
-		case "GB":
-			unitBytes = myGlobal.GB
-		case "TB":
-			unitBytes = myGlobal.TB
-		default:
-			wrongUnit(unit)
+	case "":
+		unitBytes = myGlobal.MB
+	case "KB":
+		unitBytes = myGlobal.KB
+	case "MB":
+		unitBytes = myGlobal.MB
+	case "GB":
+		unitBytes = myGlobal.GB
+	case "TB":
+		unitBytes = myGlobal.TB
+	default:
+		wrongUnit(unit)
 	}
 	return unitBytes
 }
 
 func checkMode(givenMode string) {
 	switch givenMode {
-		case "diskspace":
-		case "inode":
-		case "ro":
-		default:
-			wrongMode(givenMode)
+	case "diskspace":
+	case "inode":
+	case "ro":
+	default:
+		wrongMode(givenMode)
 	}
 }
 
@@ -141,8 +141,8 @@ func main() {
 	// loop all found disk
 	for mountPoint, diskPtr := range myDisk.New() {
 		// loop times required iterations if errored
-		for cnt :=0 ; cnt < iter ; cnt++ {
-			if len(cfgDict["disk"]) == 0  {
+		for cnt := 0; cnt < iter; cnt++ {
+			if len(cfgDict["disk"]) == 0 {
 				// need to do all partitions
 				resultVal = diskPtr.CheckIt(givenMode, cfgDict["warning"], cfgDict["critical"], givenUnit)
 			} else {
