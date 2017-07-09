@@ -32,15 +32,27 @@
 //	July 1, 2017	LIS			First Go release
 //
 // TODO:
+// NOTE We only get the fields that are importants
 
 package procfs
 
 const (
 	sysHZ  = 100
 	minPid = 300
+	// system wide
+	PROC_SYS_NETDEV  = "/proc/net/dev"
+	PROC_SYS_LOADAVG = "/proc/loadavg"
+	PROC_SYS_MEMINFO = "/proc/meminfo"
+	PROC_SYS_MOUNTS  = "/proc/mounts"
+	PROC_SYS_STAT    = "/proc/stat"
+	PROC_SYS_UPTIME  = "/proc/uptime"
+	// process base (uses pid)
+	PROC_PID_CMDLINE = "cmdline"
+	PROC_PID_COMM    = "comm"
+	PROC_PID_LIMITS  = "limits"
+	PROC_PID_SMAP    = "smaps"
+	PROC_PID_STAT    = "stat"
 )
-
-// NOTE We only get the fields that are importants
 
 // from the /proc/stat and then a single cpu line stats
 type cpuStat struct {
@@ -56,13 +68,13 @@ type cpuStat struct {
 	guestNice float64 `json:"guestnice"`
 }
 
-type sysStat struct {
-	bootTime    uint64    `json:"boottime"`
-	cpuTotal    cpuStat   `json:"cputotal"`
-	cpu         []cpuStat `json:"cpu"`
-	cntxtSwitch uint64    `json:"cntxtswitch"`
-	procRunning uint64    `json:"procrunning"`
-	procBlocked uint64    `json:"procblocked"`
+type sysLoadavg struct {
+	load1Avg  uint `json:"load1navg"`
+	load5Avg  uint `json:"load5avg"`
+	load10Avg uint `json:"load10avg"`
+	execProc  uint `json:"execproc"`
+	execQueue uint `json:"execqueue"`
+	lastPid   uint `json:"lastpid"`
 }
 
 type sysMemInfo struct {
@@ -76,20 +88,6 @@ type sysMemInfo struct {
 	swapFree     uint64 `json:"swapTotal"`
 }
 
-type sysUptime struct {
-	upTime   float64 `json:"uptime"`
-	idleTime float64 `json:"idletime"`
-}
-
-type sysLoadavg struct {
-	load1Avg  uint `json:"load1navg"`
-	load5Avg  uint `json:"load5avg"`
-	load10Avg uint `json:"load10avg"`
-	execProc  uint `json:"execproc"`
-	execQueue uint `json:"execqueue"`
-	lastPid   uint `json:"lastpid"`
-}
-
 type sysMounts struct {
 	device     string `json:"device"`
 	mountpoint string `json:"mount"`
@@ -97,12 +95,46 @@ type sysMounts struct {
 	mountState string `json:"state"`
 }
 
-type procComm struct {
-	command string `json:"command"`
+type sysStat struct {
+	bootTime    uint64    `json:"boottime"`
+	cpuTotal    cpuStat   `json:"cputotal"`
+	cpu         []cpuStat `json:"cpu"`
+	cntxtSwitch uint64    `json:"cntxtswitch"`
+	procRunning uint64    `json:"procrunning"`
+	procBlocked uint64    `json:"procblocked"`
+}
+
+type sysUptime struct {
+	upTime   float64 `json:"uptime"`
+	idleTime float64 `json:"idletime"`
 }
 
 type procCmdline struct {
 	cmdArgs string `json:"cmdargs"`
+}
+
+type procComm struct {
+	command string `json:"command"`
+}
+
+// -1 == unlimited
+type procLimits struct {
+	cpuTime          int64 `json:"cputime"`        // seconds
+	fileSize         int64 `json:"filesize"`       // bytes
+	dataSize         int64 `json:"datasize"`       // bytes
+	stackSize        int64 `json:"stacKSize"`      // bytes
+	coreFileSize     int64 `json:"corefilesize"`   // bytes
+	residentSet      int64 `json:"residentset"`    // bytes
+	processes        int64 `json:"processes"`      // processes
+	openFiles        int64 `json:"openfiles"`      // files
+	lockedMemory     int64 `json:"lockedmemory"`   // bytes
+	addressSpace     int64 `json:"addressspace"`   // bytes
+	fileLocks        int64 `json:"filelocks"`      // locks
+	pendingSignals   int64 `json:"pendingsignals"` // signals
+	msgqueueeSize    int64 `json:"msgqueueesize"`  // bytes
+	nicePriority     int   `json:"nicepriority"`
+	realtimePriority int   `json:"realtimepriority"`
+	realtimeTimeout  int64 `json:"realtimetimeout"` // usecs
 }
 
 type procSmaps struct {
@@ -149,26 +181,6 @@ type procStat struct {
 	rsslim      uint64 `json:"rsslim"`     // 25
 }
 
-// -1 == unlimited
-type procLimits struct {
-	cpuTime          int64 `json:"cputime"`        // seconds
-	fileSize         int64 `json:"filesize"`       // bytes
-	dataSize         int64 `json:"datasize"`       // bytes
-	stackSize        int64 `json:"stacKSize"`      // bytes
-	coreFileSize     int64 `json:"corefilesize"`   // bytes
-	residentSet      int64 `json:"residentset"`    // bytes
-	processes        int64 `json:"processes"`      // processes
-	openFiles        int64 `json:"openfiles"`      // files
-	lockedMemory     int64 `json:"lockedmemory"`   // bytes
-	addressSpace     int64 `json:"addressspace"`   // bytes
-	fileLocks        int64 `json:"filelocks"`      // locks
-	pendingSignals   int64 `json:"pendingsignals"` // signals
-	msgqueueeSize    int64 `json:"msgqueueesize"`  // bytes
-	nicePriority     int   `json:"nicepriority"`
-	realtimePriority int   `json:"realtimepriority"`
-	realtimeTimeout  int64 `json:"realtimetimeout"` // usecs
-}
-
 // System
 type systemProc struct {
 	stat    *sysStat
@@ -192,16 +204,16 @@ type processProc struct {
 // either read /proc/net/dev or /sys/class/net/*/statistics/*
 type netDevice struct {
 	ifName     string `json:"iFName"`     // 1
-	rxBytes    int64  `json:"rxbytes"`    // 2	== statistics file: rx_bytes
-	rxPackets  int64  `json:"rxpackets"`  // 3	== statistics file: rx_packets
-	rxErrors   int64  `json:"rxerrors"`   // 4	== statistics file: rx_errors
-	rxDropped  int64  `json:"rxdropped"`  // 5	== statistics file: rx_dropped
-	txBytes    int64  `json:"txbytes"`    // 10	== statistics file: tx_bytes
-	txPackets  int64  `json:"txpackets"`  // 11	== statistics file: tx_packets
-	txErrors   int64  `json:"txerrors"`   // 12	== statistics file: tx_errors
-	txDropped  int64  `json:"txdropped"`  // 13	== statistics file: tx_dropped
-	collisions int64  `json:"collisions"` // 15	== statistics file: collisions
-	carrier    int64  `json:"carrier"`    // 16	== statistics file: tx_carrier_errors
+	rxBytes    uint64 `json:"rxbytes"`    // 2	== statistics file: rx_bytes
+	rxPackets  uint64 `json:"rxpackets"`  // 3	== statistics file: rx_packets
+	rxErrors   uint64 `json:"rxerrors"`   // 4	== statistics file: rx_errors
+	rxDropped  uint64 `json:"rxdropped"`  // 5	== statistics file: rx_dropped
+	txBytes    uint64 `json:"txbytes"`    // 10	== statistics file: tx_bytes
+	txPackets  uint64 `json:"txpackets"`  // 11	== statistics file: tx_packets
+	txErrors   uint64 `json:"txerrors"`   // 12	== statistics file: tx_errors
+	txDropped  uint64 `json:"txdropped"`  // 13	== statistics file: tx_dropped
+	collisions uint64 `json:"collisions"` // 15	== statistics file: collisions
+	carrier    uint64 `json:"carrier"`    // 16	== statistics file: tx_carrier_errors
 }
 
 var (
