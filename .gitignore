@@ -1,3 +1,4 @@
+check-test/*
 etc/*
 glide.lock
 glide.yaml
