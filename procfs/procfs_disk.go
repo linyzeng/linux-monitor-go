@@ -35,6 +35,112 @@
 
 package procfs
 
-func dumy_disk() {
-	return
+import (
+	"io/ioutil"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"syscall"
+
+	myGlobal "github.com/my10c/nagios-plugins-go/global"
+	myUtils "github.com/my10c/nagios-plugins-go/utils"
+)
+
+// function to get all disk info based on those mounted
+func getMountInfo() map[string]*sysMount {
+	contents, err := ioutil.ReadFile(PROC_SYS_MOUNTS)
+	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	// create the map
+	devMounted := make(map[string]*sysMount)
+	// prep the regex
+	lineMatch, _ := regexp.Compile(sysMountsRegex)
+	devSymlink, _ := regexp.Compile(symRegex)
+	// read per line
+	lines := strings.Split(string(contents), "\n")
+	for _, line := range lines {
+		// skip empty line
+		if len(line) > 0 {
+			// we only want those that matching parRegex
+			match := lineMatch.MatchString(line)
+			if match {
+				// we need the first 3 fields : device, mountpoint, type and first word of mount (rw or ro)
+				currDevice := strings.Fields(line)[0]
+				currMountPoint := strings.Fields(line)[1]
+				currFSType := strings.Fields(line)[2]
+				currState := strings.Split(strings.Fields(line)[3], ",")[0]
+				// check is we have a possible symlink or fullpath
+				match = devSymlink.MatchString(currDevice)
+				if match {
+					currDevice, _ = filepath.EvalSymlinks(currDevice)
+				}
+				// create the sysMount info for this mountpoint
+				devSysMount := &sysMount{
+					device:     currDevice,
+					mountPoint: currMountPoint,
+					fsType:     currFSType,
+					mountState: currState,
+				}
+				// get the stats
+				devSysMount.Update()
+				// add to list
+				devMounted[currMountPoint] = devSysMount
+			}
+		}
+	}
+	return devMounted
+}
+
+func NewDisk() map[string]*sysMount {
+	return getMountInfo()
+}
+
+// function to get the given disk stats
+func (mountPtr *sysMount) Update() {
+	fs := syscall.Statfs_t{}
+	err := syscall.Statfs(mountPtr.mountPoint, &fs)
+	if err != nil {
+		myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	}
+	mountPtr.totalSpace = fs.Blocks * uint64(fs.Bsize)
+	mountPtr.totalUse = fs.Bfree * uint64(fs.Bsize)
+	mountPtr.totalFree = (fs.Blocks * uint64(fs.Bsize)) - (fs.Bfree * uint64(fs.Bsize))
+	mountPtr.totalInodes = fs.Files
+	mountPtr.freeInodes = fs.Ffree
+}
+
+// Functions to get disk/partitions element info
+func (mountPtr *sysMount) GetType() string {
+	return mountPtr.fsType
+}
+
+func (mountPtr *sysMount) GetSize(unit uint64) uint64 {
+	return mountPtr.totalSpace / unit
+}
+
+func (mountPtr *sysMount) GetUse(unit uint64) uint64 {
+	return mountPtr.totalUse / unit
+}
+
+func (mountPtr *sysMount) GetFree(unit uint64) uint64 {
+	return mountPtr.totalFree / unit
+}
+
+func (mountPtr *sysMount) GetInodes(unit uint64) uint64 {
+	return mountPtr.totalInodes / unit
+}
+
+func (mountPtr *sysMount) GetFreeInodes(unit uint64) uint64 {
+	return mountPtr.freeInodes / unit
+}
+
+func (mountPtr *sysMount) GetMountPoint() string {
+	return mountPtr.mountPoint
+}
+
+func (mountPtr *sysMount) GetDev() string {
+	return mountPtr.device
+}
+
+func (mountPtr *sysMount) GetState() string {
+	return mountPtr.mountState
 }

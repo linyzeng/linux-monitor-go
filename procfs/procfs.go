@@ -88,11 +88,16 @@ type sysMemInfo struct {
 	swapFree     uint64 `json:"swapTotal"`
 }
 
-type sysMounts struct {
-	device     string `json:"device"`
-	mountpoint string `json:"mount"`
-	fsType     string `json:"fstype"`
-	mountState string `json:"state"`
+type sysMount struct {
+	device      string `json:"device"`
+	mountPoint  string `json:"mount"`
+	fsType      string `json:"fstype"`
+	mountState  string `json:"state"`
+	totalSpace  uint64 `json:"total"`
+	totalUse    uint64 `json:"used"`
+	totalFree   uint64 `json:"free"`
+	totalInodes uint64 `json:"inodes"`
+	freeInodes  uint64 `json:"freeinodes"`
 }
 
 type sysStat struct {
@@ -187,7 +192,7 @@ type systemProc struct {
 	meminfo *sysMemInfo
 	uptime  *sysUptime
 	loadavg *sysLoadavg
-	mounts  *sysMounts
+	mounts  *map[string]sysMount
 	process *map[string]*processProc
 }
 

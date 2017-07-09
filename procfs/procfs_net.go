@@ -43,10 +43,10 @@ import (
 	"strings"
 
 	myGlobal "github.com/my10c/nagios-plugins-go/global"
-	//myThreshold		"github.com/my10c/nagios-plugins-go/threshold"
 	myUtils "github.com/my10c/nagios-plugins-go/utils"
 )
 
+// function to get current network devices info
 func getNetInfo() map[string]*netDevice {
 	contents, err := ioutil.ReadFile(PROC_SYS_NETDEV)
 	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
@@ -91,11 +91,11 @@ func getNetInfo() map[string]*netDevice {
 	return netDevices
 }
 
-func New() map[string]*netDevice {
+func NewNet() map[string]*netDevice {
 	return getNetInfo()
 }
 
-// function to update net work device stats
+// Function to update network device stats
 // NOTE: we do not call the indvidual () function since we like the call to bne as atomic as possible
 func (netPtr *netDevice) Update() {
 	contents, err := ioutil.ReadFile(PROC_SYS_NETDEV)
@@ -127,7 +127,7 @@ func (netPtr *netDevice) Update() {
 	}
 }
 
-// Update the rxBytes value
+// update the rxBytes value
 func (netPtr *netDevice) RxBytes() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/rx_bytes", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
@@ -137,7 +137,7 @@ func (netPtr *netDevice) RxBytes() uint64 {
 	return netPtr.rxBytes
 }
 
-// Update the rxPackets value
+// update the rxPackets value
 func (netPtr *netDevice) RxPackets() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/rx_packets", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
@@ -147,7 +147,7 @@ func (netPtr *netDevice) RxPackets() uint64 {
 	return netPtr.rxPackets
 }
 
-// Update the rxErrors value
+// update the rxErrors value
 func (netPtr *netDevice) RxErrors() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/rx_errors", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
@@ -157,7 +157,7 @@ func (netPtr *netDevice) RxErrors() uint64 {
 	return netPtr.rxErrors
 }
 
-// Update the rxDropped value
+// update the rxDropped value
 func (netPtr *netDevice) RxDropped() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/rx_dropped", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
@@ -167,7 +167,7 @@ func (netPtr *netDevice) RxDropped() uint64 {
 	return netPtr.rxDropped
 }
 
-// Update the txBytes value
+// update the txBytes value
 func (netPtr *netDevice) TxBytes() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/tx_bytes", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
@@ -177,7 +177,7 @@ func (netPtr *netDevice) TxBytes() uint64 {
 	return netPtr.txBytes
 }
 
-// Update the txPackets value
+// update the txPackets value
 func (netPtr *netDevice) TxPackets() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/tx_packets", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
@@ -187,7 +187,7 @@ func (netPtr *netDevice) TxPackets() uint64 {
 	return netPtr.txPackets
 }
 
-// Update the txErrors value
+// update the txErrors value
 func (netPtr *netDevice) TxErrors() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/tx_errors", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
@@ -197,7 +197,7 @@ func (netPtr *netDevice) TxErrors() uint64 {
 	return netPtr.txErrors
 }
 
-// Update the txDropped value
+// update the txDropped value
 func (netPtr *netDevice) TxdRopped() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/tx_dropped", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
@@ -207,7 +207,7 @@ func (netPtr *netDevice) TxdRopped() uint64 {
 	return netPtr.txDropped
 }
 
-// Update the collisions value
+// update the collisions value
 func (netPtr *netDevice) Collisions() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/collisions", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
@@ -217,7 +217,7 @@ func (netPtr *netDevice) Collisions() uint64 {
 	return netPtr.collisions
 }
 
-// Update the carrier value
+// update the carrier value
 func (netPtr *netDevice) Carrier() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/tx_carrier_errors", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
