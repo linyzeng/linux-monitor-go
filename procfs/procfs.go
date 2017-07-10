@@ -37,8 +37,18 @@
 package procfs
 
 const (
+
+	// [KMG]Bytes units
+	B  uint64 = 1
+	KB uint64 = 1024 * B
+	MB uint64 = 1024 * KB
+	GB uint64 = 1024 * MB
+	TB uint64 = 1024 * GB
+
 	sysHZ  = 100
 	minPid = 300
+	// the prod directory
+	PROC_DIR = "/proc"
 	// system wide
 	PROC_SYS_NETDEV  = "/proc/net/dev"
 	PROC_SYS_LOADAVG = "/proc/loadavg"
@@ -69,15 +79,16 @@ type cpuStat struct {
 }
 
 type sysLoadavg struct {
-	load1Avg  uint `json:"load1navg"`
-	load5Avg  uint `json:"load5avg"`
-	load10Avg uint `json:"load10avg"`
-	execProc  uint `json:"execproc"`
-	execQueue uint `json:"execqueue"`
-	lastPid   uint `json:"lastpid"`
+	load1Avg  float64 `json:"load1navg"`
+	load5Avg  float64 `json:"load5avg"`
+	load10Avg float64 `json:"load10avg"`
+	execProc  uint64  `json:"execproc"`
+	execQueue uint64  `json:"execqueue"`
+	lastPid   uint64  `json:"lastpid"`
 }
 
 type sysMemInfo struct {
+	unit         string `json:"unit"`
 	memTotal     uint64 `json:"memtotal"`
 	memFree      uint64 `json:"memfree"`
 	memAvailable uint64 `json:"memavailable"`
@@ -120,6 +131,24 @@ type procCmdline struct {
 
 type procComm struct {
 	command string `json:"command"`
+}
+
+// Rss: resident memory usage, all memory the process uses,
+//      including all memory this process shares with other processes. It does not include swap;
+// Shared: memory that this process shares with other processes;
+// Private: private memory used by this process, you can look for memory leaks here;
+// Swap: swap memory used by the process;
+// Pss: Proportional Set Size, a good overall memory indicator.
+//      It is the Rss adjusted for sharing: if a process has 1MiB private and 20MiB shared
+//      between other 10 processes, Pss is 1 + 20/10 = 3MiB
+type procMem struct {
+	comm    string `json:"com"`
+	pid     uint64 `json:"pid"`
+	rss     uint64 `json:"rss"`
+	pss     uint64 `json:"pss"`
+	shared  uint64 `json:"shared"`
+	private uint64 `json:"private"`
+	swap    uint64 `json:"swap"`
 }
 
 // -1 == unlimited
@@ -203,6 +232,11 @@ type processProc struct {
 	smaps   *procSmaps
 	stat    *procStat
 	limit   *procLimits
+}
+
+// All process
+type allProcMem struct {
+	procs map[string]*procMem
 }
 
 // network devices

@@ -45,8 +45,8 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"strings"
 	"strconv"
+	"strings"
 
 	myGlobal "github.com/my10c/nagios-plugins-go/global"
 )
@@ -54,41 +54,41 @@ import (
 var (
 	// syslog need to this so configuration can use string instead of int
 	SyslogPriority = map[string]int{
-		"LOG_EMERG"		: 0,
-		"LOG_ALERT"		: 1,
-		"LOG_CRIT"		: 2,
-		"LOG_ERR"		: 3,
-		"LOG_WARNING"	: 4,
-		"LOG_NOTICE"	: 5,
-		"LOG_INFO"		: 6,
-		"LOG_DEBUG"		: 7,
-
+		"LOG_EMERG":   0,
+		"LOG_ALERT":   1,
+		"LOG_CRIT":    2,
+		"LOG_ERR":     3,
+		"LOG_WARNING": 4,
+		"LOG_NOTICE":  5,
+		"LOG_INFO":    6,
+		"LOG_DEBUG":   7,
 	}
 	SyslogFacility = map[string]int{
-		"LOG_MAIL"		: 0,
-		"LOG_DAEMON"	: 1,
-		"LOG_AUTH"		: 2,
-		"LOG_SYSLOG"	: 3,
-		"LOG_LPR"		: 4,
-		"LOG_NEWS"		: 5,
-		"LOG_UUCP"		: 6,
-		"LOG_CRON"		: 7,
-		"LOG_AUTHPRIV"	: 8,
-		"LOG_FTP"		: 9,
-		"LOG_LOCAL0"	: 10,
-		"LOG_LOCAL1"	: 11,
-		"LOG_LOCAL2"	: 12,
-		"LOG_LOCAL3"	: 13,
-		"LOG_LOCAL4"	: 14,
-		"LOG_LOCAL5"	: 15,
-		"LOG_LOCAL6"	: 16,
-		"LOG_LOCAL7"	: 18,
+		"LOG_MAIL":     0,
+		"LOG_DAEMON":   1,
+		"LOG_AUTH":     2,
+		"LOG_SYSLOG":   3,
+		"LOG_LPR":      4,
+		"LOG_NEWS":     5,
+		"LOG_UUCP":     6,
+		"LOG_CRON":     7,
+		"LOG_AUTHPRIV": 8,
+		"LOG_FTP":      9,
+		"LOG_LOCAL0":   10,
+		"LOG_LOCAL1":   11,
+		"LOG_LOCAL2":   12,
+		"LOG_LOCAL3":   13,
+		"LOG_LOCAL4":   14,
+		"LOG_LOCAL5":   15,
+		"LOG_LOCAL6":   16,
+		"LOG_LOCAL7":   18,
 	}
 )
+
 // Function to exit if an error occured
 func ExitIfError(err error) {
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error: " + fmt.Sprint(err))
+		fmt.Fprintln(os.Stderr, "Error: "+fmt.Sprint(err))
 		log.Printf("-< %s >-\n", fmt.Sprint(err))
 		os.Exit(1)
 	}
@@ -99,15 +99,15 @@ func ExitIfError(err error) {
 func ExitWithNagiosCode(exitValue int, err error) {
 	if err != nil {
 		var nagiosCode string
-		switch exitValue{
-			case 1:
-				nagiosCode = "WARNING"
-			case 2:
-				nagiosCode = "CRITICAL"
-			default:
-				nagiosCode = "UNKNOWN"
+		switch exitValue {
+		case 1:
+			nagiosCode = "WARNING"
+		case 2:
+			nagiosCode = "CRITICAL"
+		default:
+			nagiosCode = "UNKNOWN"
 		}
-		fmt.Fprintln(os.Stderr, nagiosCode + " Error: " + fmt.Sprint(err))
+		fmt.Fprintln(os.Stderr, nagiosCode+" Error: "+fmt.Sprint(err))
 		log.Printf("%s -< %s >-\n", nagiosCode, fmt.Sprint(err))
 		os.Exit(exitValue)
 	}
@@ -301,10 +301,27 @@ func SliceToString(array []*string) string {
 	return buffer.String()
 }
 
-// Functionn to remove the last char (given) of a given string
+// Function to remove the last char (given) of a given string
 func TrimLastChar(givenString, suffix string) string {
 	if strings.HasSuffix(givenString, suffix) {
-        givenString = givenString[:len(givenString)-len(suffix)]
-    }
+		givenString = givenString[:len(givenString)-len(suffix)]
+	}
 	return givenString
+}
+
+// function to convert network speed from bytes/sec to X/sec
+func ConvertSpeed(bytes uint64, unit string) float64 {
+	// speed unit is 1000 and not 1024 for network speed!
+	var converted float64 = 0
+	switch unit {
+	case "KB":
+		converted = float64(bytes) / float64(1000)
+	case "MB":
+		converted = float64(bytes) / float64(1000*1000)
+	case "GB":
+		converted = float64(bytes) / float64(1000*1000*1000)
+	case "TB":
+		converted = float64(bytes) / float64(1000*1000*1000*1000)
+	}
+	return converted
 }

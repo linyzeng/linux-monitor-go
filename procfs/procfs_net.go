@@ -38,18 +38,19 @@ package procfs
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
-
-	myGlobal "github.com/my10c/nagios-plugins-go/global"
-	myUtils "github.com/my10c/nagios-plugins-go/utils"
 )
 
 // function to get current network devices info
 func getNetInfo() map[string]*netDevice {
 	contents, err := ioutil.ReadFile(PROC_SYS_NETDEV)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	// create the map
 	netDevices := make(map[string]*netDevice)
 	// prep the regex
@@ -95,11 +96,14 @@ func NewNet() map[string]*netDevice {
 	return getNetInfo()
 }
 
-// Function to update network device stats
+// function to update network device stats
 // NOTE: we do not call the indvidual () function since we like the call to bne as atomic as possible
 func (netPtr *netDevice) Update() {
 	contents, err := ioutil.ReadFile(PROC_SYS_NETDEV)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	// prep the regex
 	lineMatch, _ := regexp.Compile(netRegex)
 	// read per line
@@ -131,7 +135,10 @@ func (netPtr *netDevice) Update() {
 func (netPtr *netDevice) RxBytes() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/rx_bytes", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	line := strings.Split(string(contents), "\n")
 	netPtr.rxBytes, _ = strconv.ParseUint(string(line[0]), 10, 64)
 	return netPtr.rxBytes
@@ -141,7 +148,10 @@ func (netPtr *netDevice) RxBytes() uint64 {
 func (netPtr *netDevice) RxPackets() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/rx_packets", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	line := strings.Split(string(contents), "\n")
 	netPtr.rxPackets, _ = strconv.ParseUint(string(line[0]), 10, 64)
 	return netPtr.rxPackets
@@ -151,7 +161,10 @@ func (netPtr *netDevice) RxPackets() uint64 {
 func (netPtr *netDevice) RxErrors() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/rx_errors", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	line := strings.Split(string(contents), "\n")
 	netPtr.rxErrors, _ = strconv.ParseUint(string(line[0]), 10, 64)
 	return netPtr.rxErrors
@@ -161,7 +174,10 @@ func (netPtr *netDevice) RxErrors() uint64 {
 func (netPtr *netDevice) RxDropped() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/rx_dropped", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	line := strings.Split(string(contents), "\n")
 	netPtr.rxDropped, _ = strconv.ParseUint(string(line[0]), 10, 64)
 	return netPtr.rxDropped
@@ -171,7 +187,10 @@ func (netPtr *netDevice) RxDropped() uint64 {
 func (netPtr *netDevice) TxBytes() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/tx_bytes", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	line := strings.Split(string(contents), "\n")
 	netPtr.txBytes, _ = strconv.ParseUint(string(line[0]), 10, 64)
 	return netPtr.txBytes
@@ -181,7 +200,10 @@ func (netPtr *netDevice) TxBytes() uint64 {
 func (netPtr *netDevice) TxPackets() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/tx_packets", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	line := strings.Split(string(contents), "\n")
 	netPtr.txPackets, _ = strconv.ParseUint(string(line[0]), 10, 64)
 	return netPtr.txPackets
@@ -191,7 +213,10 @@ func (netPtr *netDevice) TxPackets() uint64 {
 func (netPtr *netDevice) TxErrors() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/tx_errors", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	line := strings.Split(string(contents), "\n")
 	netPtr.txErrors, _ = strconv.ParseUint(string(line[0]), 10, 64)
 	return netPtr.txErrors
@@ -201,7 +226,10 @@ func (netPtr *netDevice) TxErrors() uint64 {
 func (netPtr *netDevice) TxdRopped() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/tx_dropped", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	line := strings.Split(string(contents), "\n")
 	netPtr.txDropped, _ = strconv.ParseUint(string(line[0]), 10, 64)
 	return netPtr.txDropped
@@ -211,7 +239,10 @@ func (netPtr *netDevice) TxdRopped() uint64 {
 func (netPtr *netDevice) Collisions() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/collisions", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	line := strings.Split(string(contents), "\n")
 	netPtr.collisions, _ = strconv.ParseUint(string(line[0]), 10, 64)
 	return netPtr.collisions
@@ -221,7 +252,10 @@ func (netPtr *netDevice) Collisions() uint64 {
 func (netPtr *netDevice) Carrier() uint64 {
 	procFile := fmt.Sprintf("/sys/class/net/%s/statistics/tx_carrier_errors", netPtr.ifName)
 	contents, err := ioutil.ReadFile(procFile)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	line := strings.Split(string(contents), "\n")
 	netPtr.carrier, _ = strconv.ParseUint(string(line[0]), 10, 64)
 	return netPtr.carrier

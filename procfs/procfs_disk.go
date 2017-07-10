@@ -36,20 +36,22 @@
 package procfs
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"syscall"
-
-	myGlobal "github.com/my10c/nagios-plugins-go/global"
-	myUtils "github.com/my10c/nagios-plugins-go/utils"
 )
 
 // function to get all disk info based on those mounted
 func getMountInfo() map[string]*sysMount {
 	contents, err := ioutil.ReadFile(PROC_SYS_MOUNTS)
-	myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+	if err != nil {
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
+	}
 	// create the map
 	devMounted := make(map[string]*sysMount)
 	// prep the regex
@@ -99,7 +101,8 @@ func (mountPtr *sysMount) Update() {
 	fs := syscall.Statfs_t{}
 	err := syscall.Statfs(mountPtr.mountPoint, &fs)
 	if err != nil {
-		myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
+		fmt.Printf("Errored: %s\n", err.Error())
+		os.Exit(1)
 	}
 	mountPtr.totalSpace = fs.Blocks * uint64(fs.Bsize)
 	mountPtr.totalUse = fs.Bfree * uint64(fs.Bsize)
@@ -108,7 +111,7 @@ func (mountPtr *sysMount) Update() {
 	mountPtr.freeInodes = fs.Ffree
 }
 
-// Functions to get disk/partitions element info
+// functions to get disk/partitions element info
 func (mountPtr *sysMount) GetType() string {
 	return mountPtr.fsType
 }
