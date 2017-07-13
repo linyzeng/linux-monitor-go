@@ -4,7 +4,7 @@
 ## Next    	: check-network
 ## Released ; check-mysql, check-kafka (broker only), check-disks, check-memory: all minus stats
 
-## nagios-plugins-go : Nagios plugins written in GO
+## linux-monitor-go : Linux monitor programs written in GO
 
 ### Background
 I been writting nagios plugins for years (who remember netsaint?), most in
