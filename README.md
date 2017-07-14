@@ -1,9 +1,9 @@
 
 ## See check for their release status
 ## Current 	: working on next check
-## Next    	: check-memory stats
-## Released ; check-mysql, check-kafka (broker only), check-memory: all minus stats
-## Released ; check-disks
+## Next    	: check-load with stats
+## Released ; check-mysql, check-kafka (broker only) : all minus stats
+## Released ; check-disks, check-memory
 
 ## linux-monitor-go : Linux monitor programs written in GO
 

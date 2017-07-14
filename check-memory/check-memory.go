@@ -23,13 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Version		:	0.1
+// Version		:	0.2
 //
-// Date			:	June 4, 2017
+// Date			:	Jul 14, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
 //	June 4, 2017	LIS			First Go release
+//	Jul 14, 2017	LIS			Added stats
 //
 // TODO:
 
@@ -46,8 +47,8 @@ import (
 	myGlobal "github.com/my10c/linux-monitor-go/global"
 	myInit "github.com/my10c/linux-monitor-go/initialize"
 	myMemory "github.com/my10c/linux-monitor-go/memory"
-	// myThreshold "github.com/my10c/linux-monitor-go/threshold"
 	myUtils "github.com/my10c/linux-monitor-go/utils"
+	myStats "github.com/my10c/linux-monitor-go/stats"
 )
 
 const (
@@ -122,6 +123,9 @@ func main() {
 	var topCount int
 	var exitVal int = 0
 	var exitMsg string
+	// for stats
+	var currStats string
+    var stats *myStats.Stats
 	// create emtpy error message
 	err = fmt.Errorf("")
 	// need to be root since the config file wil have passwords
@@ -142,10 +146,13 @@ func main() {
 	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
 	myInit.InitLog()
 	myUtils.SignalHandler()
-	//--> stats := myStats.New()
 	givenUnit := checkUnit(cfgDict["unit"])
 	checkMode(givenMode)
-	//data := time.Now().Format(time.RFC3339)
+	// we do onlt stats on memory
+    if  myGlobal.DefaultValues["stats"] == "true" && givenMode == "memory" {
+		stats = myStats.New(cfgDict["statstid"], cfgDict["statstformat"])
+		currStats = fmt.Sprintf("\"memory\":")
+	}
 	thresHold := fmt.Sprintf(" (W:%s C:%s Unit:%s)", cfgDict["memwarning"], cfgDict["memcritical"], cfgDict["unit"])
 	if strings.HasSuffix(cfgDict["memwarning"], "%") {
 		usePercent = true
@@ -192,7 +199,12 @@ func main() {
 		default:
 			wrongMode(givenMode)
 		}
-		// TODO write stats here
+		// create the stats record
+		if myGlobal.DefaultValues["stats"] == "true" && givenMode == "memory" {
+			currStats = fmt.Sprintf("%s {\"MemTotal\": %v, \"MemFree\": %v, \"Cached\": %v, \"Usage\": %v, \"RealFree\": %v}",
+				currStats, systemMemInfo.Total(), systemMemInfo.Free(), systemMemInfo.Cached(),
+				systemMemInfo.RealUsage(), systemMemInfo.RealFree())
+		}
 		// if we get an OK then exit no need to do all iterations
 		if exitVal == myGlobal.OK {
 			break
@@ -205,5 +217,13 @@ func main() {
 		strings.ToUpper(myGlobal.MyProgname), myGlobal.Result[exitVal], exitMsg)
 	fmt.Printf("%s", exitMsg)
 	myUtils.LogMsg(fmt.Sprintf("%s", exitMsg))
+	// write the stat after final record cleanup
+	if myGlobal.DefaultValues["stats"] == "true" && givenMode == "memory" {
+		currStats = fmt.Sprintf("%s", myUtils.TrimLastChar(currStats, ", "))
+		err := stats.Stats(currStats)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+		}
+	}
 	os.Exit(exitVal)
 }
