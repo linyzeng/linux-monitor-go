@@ -40,8 +40,8 @@ package kafka
 //	"strings"
 //	"time"
 //
-//	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-//	myGlobal	"github.com/my10c/nagios-plugins-go/global"
+//	myUtils		"github.com/my10c/linux-monitor-go/utils"
+//	myGlobal	"github.com/my10c/linux-monitor-go/global"
 //	kafkaClass	"github.com/Shopify/sarama"
 //)
 //

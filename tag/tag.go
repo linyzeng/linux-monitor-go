@@ -41,8 +41,8 @@ import (
 	"os"
 	"strings"
 
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
+	myGlobal	"github.com/my10c/linux-monitor-go/global"
+	myUtils		"github.com/my10c/linux-monitor-go/utils"
 )
 
 // Function to get a tag specify in the file with the specify tagkey

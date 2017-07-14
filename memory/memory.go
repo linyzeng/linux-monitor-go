@@ -43,9 +43,9 @@ import (
 	"strconv"
 	"strings"
 
-	myGlobal "github.com/my10c/nagios-plugins-go/global"
-	myThreshold "github.com/my10c/nagios-plugins-go/threshold"
-	myUtils "github.com/my10c/nagios-plugins-go/utils"
+	myGlobal "github.com/my10c/linux-monitor-go/global"
+	myThreshold "github.com/my10c/linux-monitor-go/threshold"
+	myUtils "github.com/my10c/linux-monitor-go/utils"
 )
 
 const (

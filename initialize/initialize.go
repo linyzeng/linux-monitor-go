@@ -43,9 +43,9 @@ import (
 	"os"
 	"strconv"
 
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	myHelp		"github.com/my10c/nagios-plugins-go/help"
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
+	myGlobal	"github.com/my10c/linux-monitor-go/global"
+	myHelp		"github.com/my10c/linux-monitor-go/help"
+	myUtils		"github.com/my10c/linux-monitor-go/utils"
 
 	"gopkg.in/natefinch/lumberjack.v2"
 	"github.com/my10c/simpleyaml"

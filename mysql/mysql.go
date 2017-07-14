@@ -39,9 +39,9 @@ import (
 	"fmt"
 	"strconv"
 
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
+	myGlobal	"github.com/my10c/linux-monitor-go/global"
+	myUtils		"github.com/my10c/linux-monitor-go/utils"
+	myThreshold	"github.com/my10c/linux-monitor-go/threshold"
 
 	_ "github.com/go-sql-driver/mysql"
 	"database/sql"

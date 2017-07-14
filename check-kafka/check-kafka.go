@@ -42,14 +42,14 @@ import (
 	"strings"
 	"time"
 
-	myInit		"github.com/my10c/nagios-plugins-go/initialize"
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	//myKafka		"github.com/my10c/nagios-plugins-go/kafka"
-	myZoo		"github.com/my10c/nagios-plugins-go/zookeeper"
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	// myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
-	myAlert		"github.com/my10c/nagios-plugins-go/alert"
-	//myStats		"github.com/my10c/nagios-plugins-go/stats"
+	myInit		"github.com/my10c/linux-monitor-go/initialize"
+	myUtils		"github.com/my10c/linux-monitor-go/utils"
+	//myKafka		"github.com/my10c/linux-monitor-go/kafka"
+	myZoo		"github.com/my10c/linux-monitor-go/zookeeper"
+	myGlobal	"github.com/my10c/linux-monitor-go/global"
+	// myThreshold	"github.com/my10c/linux-monitor-go/threshold"
+	myAlert		"github.com/my10c/linux-monitor-go/alert"
+	//myStats		"github.com/my10c/linux-monitor-go/stats"
 )
 
 const (

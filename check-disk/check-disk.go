@@ -42,11 +42,11 @@ import (
 	"strings"
 	"time"
 
-	myAlert "github.com/my10c/nagios-plugins-go/alert"
-	myDisk "github.com/my10c/nagios-plugins-go/disk"
-	myGlobal "github.com/my10c/nagios-plugins-go/global"
-	myInit "github.com/my10c/nagios-plugins-go/initialize"
-	myUtils "github.com/my10c/nagios-plugins-go/utils"
+	myAlert "github.com/my10c/linux-monitor-go/alert"
+	myDisk "github.com/my10c/linux-monitor-go/disk"
+	myGlobal "github.com/my10c/linux-monitor-go/global"
+	myInit "github.com/my10c/linux-monitor-go/initialize"
+	myUtils "github.com/my10c/linux-monitor-go/utils"
 	//myStats		"github.com/my10c/nagios-plugins-go/stats"
 )
 

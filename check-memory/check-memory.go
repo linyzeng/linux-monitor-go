@@ -43,11 +43,11 @@ import (
 	"strings"
 	"time"
 
-	myGlobal "github.com/my10c/nagios-plugins-go/global"
-	myInit "github.com/my10c/nagios-plugins-go/initialize"
-	myMemory "github.com/my10c/nagios-plugins-go/memory"
-	// myThreshold "github.com/my10c/nagios-plugins-go/threshold"
-	myUtils "github.com/my10c/nagios-plugins-go/utils"
+	myGlobal "github.com/my10c/linux-monitor-go/global"
+	myInit "github.com/my10c/linux-monitor-go/initialize"
+	myMemory "github.com/my10c/linux-monitor-go/memory"
+	// myThreshold "github.com/my10c/linux-monitor-go/threshold"
+	myUtils "github.com/my10c/linux-monitor-go/utils"
 )
 
 const (

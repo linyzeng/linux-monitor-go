@@ -40,9 +40,9 @@ import (
 	"os"
 	"strings"
 
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	myTag		"github.com/my10c/nagios-plugins-go/tag"
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
+	myGlobal	"github.com/my10c/linux-monitor-go/global"
+	myTag		"github.com/my10c/linux-monitor-go/tag"
+	myUtils		"github.com/my10c/linux-monitor-go/utils"
 )
 
 // Function to sent alerts

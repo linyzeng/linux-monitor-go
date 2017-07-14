@@ -40,8 +40,8 @@ import (
 	"strings"
 	"time"
 
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	myUtils		"github.com/my10c/linux-monitor-go/utils"
+	myGlobal	"github.com/my10c/linux-monitor-go/global"
 	zkClass		"github.com/samuel/go-zookeeper/zk"
 )
 

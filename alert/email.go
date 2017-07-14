@@ -40,7 +40,7 @@ import (
 	"net/mail"
 	"net/smtp"
 
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
+	myGlobal	"github.com/my10c/linux-monitor-go/global"
 )
 
 // Function to send an alert email

@@ -42,12 +42,12 @@ import (
 	"strings"
 	"time"
 
-	myInit		"github.com/my10c/nagios-plugins-go/initialize"
-	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-	myMySQL		"github.com/my10c/nagios-plugins-go/mysql"
-	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
-	myAlert		"github.com/my10c/nagios-plugins-go/alert"
+	myInit		"github.com/my10c/linux-monitor-go/initialize"
+	myUtils		"github.com/my10c/linux-monitor-go/utils"
+	myMySQL		"github.com/my10c/linux-monitor-go/mysql"
+	myGlobal	"github.com/my10c/linux-monitor-go/global"
+	myThreshold	"github.com/my10c/linux-monitor-go/threshold"
+	myAlert		"github.com/my10c/linux-monitor-go/alert"
 	//myStats		"github.com/my10c/nagios-plugins-go/stats"
 )
 

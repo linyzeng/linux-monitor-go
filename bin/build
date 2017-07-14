@@ -8,6 +8,6 @@ if (( $# != 1 )) ; then
 	echo "syntax: $(basename $0) plugin-name"
 	exit 0
 else
-	go build -i -v  -ldflags '-w -s' -o ${GOPATH}/bin/$1 github.com/my10c/nagios-plugins-go/$1
+	go build -i -v  -ldflags '-w -s' -o ${GOPATH}/bin/$1 github.com/my10c/linux-monitor-go/$1
 	exit $?
 fi

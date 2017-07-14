@@ -40,11 +40,11 @@ package main
 //	"os"
 //	"time"
 //
-//	myInit		"github.com/my10c/nagios-plugins-go/initialize"
-//	myUtils		"github.com/my10c/nagios-plugins-go/utils"
-//	myMySQL		"github.com/my10c/nagios-plugins-go/mysql"
-//	myGlobal	"github.com/my10c/nagios-plugins-go/global"
-//	myThreshold	"github.com/my10c/nagios-plugins-go/threshold"
+//	myInit		"github.com/my10c/linux-monitor-go/initialize"
+//	myUtils		"github.com/my10c/linux-monitor-go/utils"
+//	myMySQL		"github.com/my10c/linux-monitor-go/mysql"
+//	myGlobal	"github.com/my10c/linux-monitor-go/global"
+//	myThreshold	"github.com/my10c/linux-monitor-go/threshold"
 //)
 
 func main() {

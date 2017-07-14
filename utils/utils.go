@@ -48,7 +48,7 @@ import (
 	"strconv"
 	"strings"
 
-	myGlobal "github.com/my10c/nagios-plugins-go/global"
+	myGlobal "github.com/my10c/linux-monitor-go/global"
 )
 
 var (
