@@ -23,13 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Version		:	0.1
+// Version		:	0.2
 //
-// Date			:	June 4, 2017
+// Date			:	Jul 14, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
 //	June 4, 2017	LIS			First Go release
+//	Jul 14, 2017	LIS			Add more options for stats
 //
 // TODO:
 
@@ -138,10 +139,12 @@ var (
 	Result = []string{"OK", "WARNING", "CRITICAL", "UNKNOWN"}
 
 	// stats is always optional but has a default value. so this is hardcoded!
-	DefaultStats      map[string]string
-	StatsOptionalKeys = []string{"statsdir", "statsfile"}
-	DefaultStatsDir   = DefaultLogsDir
-	DefaultStatsFile  = fmt.Sprintf("%s", MyProgname)
+	DefaultStats		map[string]string
+	StatsOptionalKeys	= []string{"statsdir", "statsfile", "statstid", "statstformat"}
+	DefaultStatsDir		= DefaultLogsDir
+	DefaultStatsFile	= fmt.Sprintf("%s", MyProgname)
+	DefaultStatsTId		= "_t"
+	DefaultStatsTFormat	= "2006-01-02T15:04:05Z"
 
 	DefaultIter      map[string]string
 	IterOptionalKeys = []string{"iter", "iterwait"}
@@ -204,6 +207,8 @@ func init() {
 	DefaultStats = make(map[string]string)
 	DefaultStats["statsdir"] = DefaultStatsDir
 	DefaultStats["statsfile"] = DefaultStatsFile
+	DefaultStats["statstid"] = DefaultStatsTId
+	DefaultStats["statstformat"] = DefaultStatsTFormat
 	// for iter
 	DefaultIter = make(map[string]string)
 	DefaultIter["iter"] = strconv.Itoa(DefaultIterCnt)

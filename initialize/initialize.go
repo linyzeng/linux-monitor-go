@@ -23,13 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Version		:	0.1
+// Version		:	0.2
 //
-// Date			:	June 4, 2017
+// Date			:	Jul 14 4, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
 //	June 4, 2017	LIS			First Go release
+//	July 14, 2017	LIS			fix for stats
 //
 // TODO:
 
@@ -162,6 +163,8 @@ func InitConfig(cfgList []string, argv...string) map[string]string {
 		statsKey := myGlobal.StatsOptionalKeys[statsCnt]
 		if statsValue, err := getYamlValue(yamlFile, myGlobal.MyProgname, statsKey); err == nil {
 			dictCfg[statsKey] = statsValue
+			// also update the global!
+			myGlobal.DefaultStats[statsKey] = statsValue
 		} else {
 			dictCfg[statsKey] = myGlobal.DefaultStats[statsKey]
 		}

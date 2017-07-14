@@ -25,11 +25,11 @@
 //
 // Version		:	0.1
 //
-// Date			:	June 4, 2017
+// Date			:	Jul 14, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
-//	June 4, 2017	LIS			First Go release
+//	Jul 14, 2017	LIS			First Go release
 //
 // TODO:
 
@@ -39,6 +39,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	myGlobal	"github.com/my10c/linux-monitor-go/global"
 	myUtils		"github.com/my10c/linux-monitor-go/utils"
@@ -46,19 +47,22 @@ import (
 )
 
 type Stats struct {
-	StatFilename string
-	Enable bool
-	StatsRecord string
+	statsFileName string
+	enable bool
+	statsRecord string
+	stateTimeID string
+	stateTimeFormat string
 	mu sync.Mutex
 }
 
 // Function to create a stats jobs
-func New() *Stats {
+func New(timeID, timeFormat string) *Stats {
 	statFilenName, isEnable := initStats()
 	statPtr := &Stats {
-		StatFilename: statFilenName,
-		Enable: isEnable,
-		StatsRecord: "",
+		statsFileName: statFilenName,
+		enable: isEnable,
+		stateTimeID: timeID,
+		stateTimeFormat: timeFormat,
 	}
 	return statPtr
 }
@@ -66,18 +70,17 @@ func New() *Stats {
 // Function to initialize the stats directoty and the stats file
 func initStats() (string, bool) {
 	// only if stats was enable
-	if myGlobal.DefaultOptionals["stats"] == "false" {
+	if myGlobal.DefaultStats["stats"] == "false" {
 		err := fmt.Errorf("Stats is disable.")
 		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
 		return "", false
 	}
-	fmt.Printf("dir %s file %s\n\n", myGlobal.DefaultOptionals["statsdir"], myGlobal.DefaultOptionals["statsfile"])
 	// make sure the both statsdir and statsfiel were set
-	if len(myGlobal.DefaultOptionals["statsdir"]) == 0 ||
-		len(myGlobal.DefaultOptionals["statsfile"]) == 0 {
+	if len(myGlobal.DefaultStats["statsdir"]) == 0 ||
+		len(myGlobal.DefaultStats["statsfile"]) == 0 {
 		err := fmt.Errorf("Either statsdir or/and statsfile was not set, stats has been disabled.")
 		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
-		myGlobal.DefaultOptionals["stats"] = "false"
+		myGlobal.DefaultStats["stats"] = "false"
 		return "", false
 	}
 	// create the directory
@@ -85,30 +88,31 @@ func initStats() (string, bool) {
 	if err != nil {
 		fmt.Printf("Unable to create stats directory, stats has been disabled.\n")
 		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
-		myGlobal.DefaultOptionals["stats"] = "false"
+		myGlobal.DefaultStats["stats"] = "false"
 		return "", false
 	}
 	// create the full path name
-	statsFile := fmt.Sprintf("%s/%s", myGlobal.DefaultOptionals["statsdir"], myGlobal.DefaultOptionals["statsfile"])
-	return statsFile, true 
+	statsFile := fmt.Sprintf("%s/%s", myGlobal.DefaultStats["statsdir"], myGlobal.DefaultStats["statsfile"])
+	return statsFile, true
 }
 
 // Function to write given stats record to the stat file
-func (statsPtr *Stats) WriteStat() error {
+func (statsPtr *Stats) write() error {
 	// we return if forwhatever reason that stats is not enabled
-	if  !statsPtr.Enable {
+	if  !statsPtr.enable {
 		return nil
 	}
-	statsFile, err := os.OpenFile(statsPtr.StatFilename, os.O_APPEND|os.O_WRONLY, 0600)
+	// create if it does not exist otherwise append, try can write then appaned and finally create
+	statsFile, err := os.OpenFile(statsPtr.statsFileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
-		myUtils.LogMsg(fmt.Sprintf("Unable to open the stats file, this record has been skipped.\n%s\n", statsPtr.StatsRecord))
+		myUtils.LogMsg(fmt.Sprintf("Unable to open the stats file, this record has been skipped.\n%s\n", statsPtr.statsRecord))
 		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
 		return err
 	}
 	defer statsFile.Close()
 	statsPtr.mu.Lock()
 	defer statsPtr.mu.Unlock()
-	_, err = statsFile.WriteString(statsPtr.StatsRecord)
+	_, err = statsFile.WriteString(statsPtr.statsRecord)
 	if err != nil {
 		fmt.Printf("Unable to open write stats record, this record has been skipped.\n")
 		myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
@@ -118,7 +122,18 @@ func (statsPtr *Stats) WriteStat() error {
 }
 
 // Function to create a start record based on the given string
-func (statsPtr *Stats) CreateRecord() error {
-	var err error = nil
-	return err
+func (statsPtr *Stats) create(record string) {
+	//create the timestamp entry
+	formatString := time.Now().UTC().Format(statsPtr.stateTimeFormat)
+	timeStamp := fmt.Sprintf("{\"%s\": \"%s\",", statsPtr.stateTimeID, formatString)
+	// create final record
+	record = fmt.Sprintf("%s %s}\n", timeStamp, record)
+	statsPtr.statsRecord = record
+	return
+}
+
+// function to wrapper around the create and write the stats record
+func (statsPtr *Stats) Stats(record string) error {
+	statsPtr.create(record)
+	return statsPtr.write()
 }

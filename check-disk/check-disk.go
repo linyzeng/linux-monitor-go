@@ -25,13 +25,13 @@
 //
 // Version		:	0.1
 //
-// Date			:	June 30, 2017
+// Date			:	Jul 14, 2017
 //
 // History	:
 // 	Date:			Author:		Info:
 //	June 30, 2017	LIS			First Go release
+//	Jul 14, 2017	LIS			Added stats
 //
-// TODO: write stats
 
 package main
 
@@ -42,12 +42,12 @@ import (
 	"strings"
 	"time"
 
-	myAlert "github.com/my10c/linux-monitor-go/alert"
-	myDisk "github.com/my10c/linux-monitor-go/disk"
-	myGlobal "github.com/my10c/linux-monitor-go/global"
-	myInit "github.com/my10c/linux-monitor-go/initialize"
-	myUtils "github.com/my10c/linux-monitor-go/utils"
-	//myStats		"github.com/my10c/nagios-plugins-go/stats"
+	myAlert		"github.com/my10c/linux-monitor-go/alert"
+	myDisk		"github.com/my10c/linux-monitor-go/disk"
+	myGlobal	"github.com/my10c/linux-monitor-go/global"
+	myInit		"github.com/my10c/linux-monitor-go/initialize"
+	myUtils		"github.com/my10c/linux-monitor-go/utils"
+	myStats		"github.com/my10c/linux-monitor-go/stats"
 )
 
 const (
@@ -119,6 +119,11 @@ func main() {
 	var resultVal int
 	var exitVal int = 0
 	var exitMsg string
+	var currMount string
+	var currStats string
+	var stats *myStats.Stats
+	// use to stop stats creation in case not check all disks
+	var doStats bool = true
 	// create emtpy error message
 	err = fmt.Errorf("")
 	// need to be root since the config file wil have passwords
@@ -131,10 +136,13 @@ func main() {
 	cfgDict := myInit.InitConfig(cfgRequired, cfgFile)
 	myInit.InitLog()
 	myUtils.SignalHandler()
-	//--> stats := myStats.New()
 	givenUnit := checkUnit(cfgDict["unit"])
 	checkMode(givenMode)
-	//data := time.Now().Format(time.RFC3339)
+	// we do onlt stats on diskspace!
+	if  myGlobal.DefaultValues["stats"] == "true" && givenMode == "diskspace" {
+		stats = myStats.New(cfgDict["statstid"], cfgDict["statstformat"])
+		currStats = fmt.Sprintf("\"partitions\": {")
+	}
 	thresHold := fmt.Sprintf(" (W:%s C:%s Unit:%s)", cfgDict["warning"], cfgDict["critical"], cfgDict["unit"])
 	iter, _ := strconv.Atoi(cfgDict["iter"])
 	iterWait, _ := time.ParseDuration(cfgDict["iterwait"])
@@ -146,15 +154,23 @@ func main() {
 				// need to do all partitions
 				resultVal = diskPtr.CheckIt(givenMode, cfgDict["warning"], cfgDict["critical"], givenUnit)
 			} else {
+				doStats = false
 				// if disk is set we stop as soon we have a hit, can be mountpoint or device name
 				if (diskPtr.GetDev() == cfgDict["disk"]) || (mountPoint == cfgDict["disk"]) {
 					resultVal = diskPtr.CheckIt(givenMode, cfgDict["warning"], cfgDict["critical"], givenUnit)
+					doStats = true
 				}
 			}
-			//
-			// TODO write stats here
-			// so we will could get only 1 entry if the result was OK
-			//
+			// create the stats record
+			if myGlobal.DefaultValues["stats"] == "true" && givenMode == "diskspace" && doStats {
+				currMount = diskPtr.GetMountPoint()
+				if  currMount == "/" {
+					currMount = "root"
+				}
+				currStats = fmt.Sprintf("%s\"%v\": {\"total\": %v, \"free\": %v, \"use\": %v}", currStats,
+					currMount, diskPtr.GetSize(givenUnit), diskPtr.GetFree(givenUnit), diskPtr.GetUse(givenUnit))
+				currStats = fmt.Sprintf("%s, ", currStats)
+			}
 			// got OK, break and go to next partition
 			if resultVal == myGlobal.OK {
 				break
@@ -208,5 +224,13 @@ func main() {
 	}
 	fmt.Printf("%s", exitMsg)
 	myUtils.LogMsg(fmt.Sprintf("%s", exitMsg))
+	// write the stat after final record cleanup
+	if myGlobal.DefaultValues["stats"] == "true" && givenMode == "diskspace" {
+		currStats = fmt.Sprintf("%s}", myUtils.TrimLastChar(currStats, ", "))
+		err := stats.Stats(currStats)
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+		}
+	}
 	os.Exit(exitVal)
 }
