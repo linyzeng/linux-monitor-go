@@ -38,34 +38,34 @@ package threshold
 import (
 	"fmt"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
 
-	myGlobal	"github.com/my10c/linux-monitor-go/global"
+	myGlobal "github.com/my10c/linux-monitor-go/global"
 )
 
 var (
-	percent bool = false
-	warnThreshold uint64
-	critThreshold uint64
+	percent       bool = false
+	warnThreshold float64
+	critThreshold float64
 )
 
 // Function to check that the configured thresholds are correct
-func SanityCheck(revert bool, warning string, critical string) (uint64, uint64, bool){
+func SanityCheck(revert bool, warning, critical string) (float64, float64, bool) {
 	var cnt int = 0
 	if strings.HasSuffix(warning, "%") {
 		percent = true
-		warnThreshold, _ = strconv.ParseUint(warning[:len(warning) - 1], 10, 64)
+		warnThreshold, _ = strconv.ParseFloat(warning[:len(warning)-1], 64)
 		cnt++
 	} else {
-		warnThreshold , _ = strconv.ParseUint(warning, 10, 64)
+		warnThreshold, _ = strconv.ParseFloat(warning, 64)
 	}
 	if strings.HasSuffix(critical, "%") {
 		percent = true
-		critThreshold, _ = strconv.ParseUint(critical[:len(critical) - 1], 10, 64)
+		critThreshold, _ = strconv.ParseFloat(critical[:len(critical)-1], 64)
 		cnt++
 	} else {
-		critThreshold , _ = strconv.ParseUint(critical, 10, 64)
+		critThreshold, _ = strconv.ParseFloat(critical, 64)
 	}
 	if percent == true {
 		if cnt != 2 {
@@ -87,26 +87,54 @@ func SanityCheck(revert bool, warning string, critical string) (uint64, uint64, 
 	if revert {
 		if warnThreshold <= critThreshold {
 			fmt.Printf("%s", myGlobal.MyInfo)
-				fmt.Printf("Critical threshold must be less than Warning threshold\n")
+			fmt.Printf("Critical threshold must be less than Warning threshold\n")
 			os.Exit(1)
 		}
 	} else {
 		if warnThreshold >= critThreshold {
 			fmt.Printf("%s", myGlobal.MyInfo)
-				fmt.Printf("Warning threshold must be less than Critical threshold\n")
+			fmt.Printf("Warning threshold must be less than Critical threshold\n")
 			os.Exit(1)
 		}
 	}
 	return warnThreshold, critThreshold, percent
 }
 
-// Function to check if the value is within threshold
-func CalculateUsage(revert bool, precent bool, warnThreshold uint64, critThreshold uint64, currValue uint64, totalValue uint64) int {
+// Function to check if the value is within threshold, in type is integer
+func CalculateUsage(revert bool, precent bool, warnThreshold, critThreshold float64, currValue uint64, totalValue uint64) int {
+	// convert to float
+	var floatCurrValue float64
 	// calculate based on %
 	if precent == true {
 		// need to use float to get correct division value
 		// note the value will be down-rounded
-		currValue = uint64((float64(currValue)/float64(totalValue)) * 100)
+		floatCurrValue = (float64(currValue) / float64(totalValue)) * 100
+	}
+	if revert {
+		if floatCurrValue <= critThreshold {
+			return 2
+		}
+		if floatCurrValue <= warnThreshold {
+			return 1
+		}
+	} else {
+		if floatCurrValue >= critThreshold {
+			return 2
+		}
+		if floatCurrValue >= warnThreshold {
+			return 1
+		}
+	}
+	return 0
+}
+
+// Function to check if the value is within threshold, in type is float
+func CalculateValue(revert bool, precent bool, warnThreshold, critThreshold float64, currValue float64, maxValue float64) int {
+	// calculate based on %
+	if precent == true {
+		// need to use float to get correct division value
+		// note the value will be down-rounded
+		currValue = (currValue / maxValue) * 100
 	}
 	if revert {
 		if currValue <= critThreshold {

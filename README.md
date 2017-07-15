@@ -1,9 +1,9 @@
 
 ## See check for their release status
 ## Current 	: working on next check
-## Next    	: check-load with stats
+## Next    	: check-process with stats
 ## Released ; check-mysql, check-kafka (broker only) : all minus stats
-## Released ; check-disks, check-memory
+## Released ; check-disks, check-memory, check-load
 
 ## linux-monitor-go : Linux monitor programs written in GO
 
@@ -153,17 +153,17 @@ check-disk status `first release`		: check disk space
 
 check-kafka status `broker mode only`	: check kakfa
 
-check-load status `not started yet`		: check system load
+check-load status `first release`		: check system load
 
 check-memory status `first release`		: check available memory
 
 check-mysql status `first release`		: check mysql health include slave/replication
 
-check-network status `in progress`		: check network status such as TX, RX and error
+check-network status `back in queue`	: check network status such as TX, RX and error
 
 check-nginx status `not started yet`	: check nginx status
 
-check-process status `not started yet`	: check if a given process is running, /prod basesd
+check-process status `starting`			: check if given process(es) is running, /proc basesd
 
 check-psql status `not started yet`		: check mysql health include slave/replication
 
