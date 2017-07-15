@@ -164,7 +164,7 @@ func main() {
 	}
 	regexRemove := regexp.MustCompile(dblSpace)
 	// Get the memory infos
-	systemMemInfo, processMemInfo := myMemory.New(givenUnit)
+	systemMemInfo := myMemory.New(givenUnit)
 	for cnt := 0; cnt < iter; cnt++ {
 		switch givenMode {
 		case "memory":
@@ -189,7 +189,7 @@ func main() {
 			// remove the top- string as that is an invalid option for the memory class
 			cleanedMode := strings.Replace(givenMode, "top-", "", -1)
 			// output one line per process info, todo so remove the double space then replace single space with carriage-return
-			cleanedInfo := strings.Replace(regexRemove.ReplaceAllString(myMemory.GetTop(topCount, cleanedMode, processMemInfo), " "), " ", "\n", -1)
+			cleanedInfo := strings.Replace(regexRemove.ReplaceAllString(myMemory.GetTop(topCount, cleanedMode, givenUnit), " "), " ", "\n", -1)
 			exitMsg = fmt.Sprintf("(Unit %s)\n%s", cfgDict["unit"], cleanedInfo)
 			// its a show fucntion so we breal out of the loop
 			break

@@ -244,8 +244,8 @@ func getProcessesMemInfo(unit uint64) map[string]*processMemStruct {
 }
 
 // Function to get the system and processes memory info
-func New(unit uint64) (*sysMemStruct, map[string]*processMemStruct) {
-	return getSysMemInfo(unit), getProcessesMemInfo(unit)
+func New(unit uint64) *sysMemStruct {
+	return getSysMemInfo(unit)
 }
 
 // Function to get the process commmand name
@@ -297,9 +297,11 @@ func (memPtr *processMemStruct) GetVal(memType string) (uint64, error) {
 }
 
 // function to get the top memory usage by type limit by thge given count
-func GetTop(count int, memType string, allProcs map[string]*processMemStruct) string {
+func GetTop(count int, memType string, unit uint64) string {
 	var workList []*processMemStruct
 	var topList string
+	// generate the process list
+	allProcs := getProcessesMemInfo(unit)
 	for _, val := range allProcs {
 		workList = append(workList, val)
 	}
