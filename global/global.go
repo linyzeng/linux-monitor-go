@@ -76,6 +76,8 @@ var (
 	// Global variables
 	Logfile  string
 	ConfFile string
+	MyUnit   string = "KB"
+	MyTop    string = "10"
 
 	// special for addtional setup
 	ExtraInfo string
@@ -139,12 +141,12 @@ var (
 	Result = []string{"OK", "WARNING", "CRITICAL", "UNKNOWN"}
 
 	// stats is always optional but has a default value. so this is hardcoded!
-	DefaultStats		map[string]string
-	StatsOptionalKeys	= []string{"statsdir", "statsfile", "statstid", "statstformat"}
-	DefaultStatsDir		= DefaultLogsDir
-	DefaultStatsFile	= fmt.Sprintf("%s", MyProgname)
-	DefaultStatsTId		= "_t"
-	DefaultStatsTFormat	= "2006-01-02T15:04:05Z"
+	DefaultStats        map[string]string
+	StatsOptionalKeys   = []string{"statsdir", "statsfile", "statstid", "statstformat"}
+	DefaultStatsDir     = DefaultLogsDir
+	DefaultStatsFile    = fmt.Sprintf("%s", MyProgname)
+	DefaultStatsTId     = "_t"
+	DefaultStatsTFormat = "2006-01-02T15:04:05Z"
 
 	DefaultIter      map[string]string
 	IterOptionalKeys = []string{"iter", "iterwait"}
@@ -160,10 +162,14 @@ func init() {
 	ExtraInfo = ""
 	// the common section
 	DefaultValues = make(map[string]string)
+	// use by check scripts
 	DefaultValues["noalert"] = DefaultNoAlert
 	DefaultValues["stats"] = DefaultCreateStats
 	DefaultValues["nolog"] = DefaultNoLog
 	DefaultValues["debug"] = DefaultDebug
+	// use ny get scripts
+	DefaultValues["unit"] = MyUnit
+	DefaultValues["top"] = MyTop
 	// for Log
 	DefaultLog = make(map[string]string)
 	DefaultLog["logdir"] = DefaultLogsDir

@@ -37,25 +37,26 @@
 package initialize
 
 import (
-	"fmt"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
-	myGlobal	"github.com/my10c/linux-monitor-go/global"
-	myHelp		"github.com/my10c/linux-monitor-go/help"
-	myUtils		"github.com/my10c/linux-monitor-go/utils"
+	myGlobal "github.com/my10c/linux-monitor-go/global"
+	myHelp "github.com/my10c/linux-monitor-go/help"
+	myUtils "github.com/my10c/linux-monitor-go/utils"
 
-	"gopkg.in/natefinch/lumberjack.v2"
 	"github.com/my10c/simpleyaml"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 // type used for flags in initArgs
 type stringFlag struct {
-	value	string
-	set		bool
+	value string
+	set   bool
 }
 
 // Function for the stringFlag struct, set the values
@@ -99,7 +100,7 @@ func getYamlValue(yamFile *simpleyaml.Yaml, section string, key string) (string,
 }
 
 // Function to get the configuration
-func InitConfig(cfgList []string, argv...string) map[string]string {
+func InitConfig(cfgList []string, argv ...string) map[string]string {
 	// working variable
 	var missingKeys []string
 	dictCfg := make(map[string]string)
@@ -213,7 +214,7 @@ func InitLog() {
 	}
 	if len(myGlobal.DefaultLog["logfile"]) > 0 {
 		// create directory
-		err := os.MkdirAll(myGlobal.DefaultLog["logdir"], 0755) 
+		err := os.MkdirAll(myGlobal.DefaultLog["logdir"], 0755)
 		if err != nil {
 			fmt.Printf("Unable to create the Log directory, logs are send to console!\n")
 			myUtils.LogMsg(fmt.Sprintf("%s\n", err.Error()))
@@ -221,14 +222,14 @@ func InitLog() {
 		}
 		logFileFullPath := fmt.Sprintf("%s/%s", myGlobal.DefaultLog["logdir"], myGlobal.DefaultLog["logfile"])
 		log.SetFlags(log.LstdFlags | log.Lshortfile)
-		MaxSize, _		:= strconv.Atoi(myGlobal.DefaultLog["logmaxsize"])
-		MaxBackups, _	:= strconv.Atoi(myGlobal.DefaultLog["logmaxbackups"])
-		MaxAge, _		:= strconv.Atoi(myGlobal.DefaultLog["logmaxage"])
+		MaxSize, _ := strconv.Atoi(myGlobal.DefaultLog["logmaxsize"])
+		MaxBackups, _ := strconv.Atoi(myGlobal.DefaultLog["logmaxbackups"])
+		MaxAge, _ := strconv.Atoi(myGlobal.DefaultLog["logmaxage"])
 		log.SetOutput(&lumberjack.Logger{
-			Filename:	logFileFullPath,
-			MaxSize:	MaxSize,
-			MaxBackups:	MaxBackups,
-			MaxAge:		MaxAge,
+			Filename:   logFileFullPath,
+			MaxSize:    MaxSize,
+			MaxBackups: MaxBackups,
+			MaxAge:     MaxAge,
 		})
 	}
 }
@@ -237,35 +238,65 @@ func InitLog() {
 func InitArgs(cfg []string) (string, string) {
 	var myConfigFile stringFlag
 	var myMode stringFlag
+	var myUnit stringFlag
+	var myTop stringFlag
+	var setup *bool
+	var noalert *bool
+	var stats *bool
+	var nolog *bool
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", myGlobal.MyProgname)
 		flag.PrintDefaults()
 	}
+	// common flags
 	version := flag.Bool("version", false, "Prints current version and exit.")
-	setup := flag.Bool("setup", false, "Show the setup information and exit.")
-	noalert := flag.Bool("noalert", false, "Send no alert.")
-	stats := flag.Bool("stats", false, "Create stats if set.")
-	nolog := flag.Bool("nolog", false, "Do not log result.")
-	flag.Var(&myConfigFile, "config", "Configuration file to be used.")
 	flag.Var(&myMode, "mode", "check mode, use `-mode help` to see available modes.")
+	// any check script has these options
+	if strings.HasPrefix(myGlobal.MyProgname, "check-") == true {
+		flag.Var(&myConfigFile, "config", "Configuration file to be used.")
+		setup = flag.Bool("setup", false, "Show the setup information and exit.")
+		noalert = flag.Bool("noalert", false, "Send no alert.")
+		stats = flag.Bool("stats", false, "Create stats if set.")
+		nolog = flag.Bool("nolog", false, "Do not log result.")
+	}
+	// any get script has these options
+	if strings.HasPrefix(myGlobal.MyProgname, "get-") == true {
+		flag.Var(&myUnit, "unit", "Unit KB(default), MB, GB or TB.")
+		flag.Var(&myTop, "top", "Show top usage.")
+	}
 	flag.Parse()
+	// commons
 	if *version {
 		fmt.Printf("%s\n", myGlobal.MyVersion)
 		os.Exit(0)
 	}
-	if *setup {
-		myHelp.SetupHelp(cfg)
-	}
 	if !myMode.set {
 		myHelp.Help(1)
 	}
-	// if not set we use the default
-	if !myConfigFile.set{
-		myConfigFile.Set(myGlobal.DefaultConfigFile)
+	// its a check script
+	if strings.HasPrefix(myGlobal.MyProgname, "check-") == true {
+		if *setup {
+			myHelp.SetupHelp(cfg)
+		}
+		// if not set we use the default
+		if !myConfigFile.set {
+			myConfigFile.Set(myGlobal.DefaultConfigFile)
+		}
+		// set the noalert and nolog
+		myGlobal.DefaultValues["noalert"] = strconv.FormatBool(*noalert)
+		myGlobal.DefaultValues["nolog"] = strconv.FormatBool(*nolog)
+		myGlobal.DefaultValues["stats"] = strconv.FormatBool(*stats)
 	}
-	// set the noalert and nolog
-	myGlobal.DefaultValues["noalert"] = strconv.FormatBool(*noalert)
-	myGlobal.DefaultValues["nolog"] = strconv.FormatBool(*nolog)
-	myGlobal.DefaultValues["stats"] = strconv.FormatBool(*stats)
+	// its a get script
+	if strings.HasPrefix(myGlobal.MyProgname, "get-") == true {
+		// if unit was given as a arg, override default
+		if myUnit.set {
+			myGlobal.DefaultValues["unit"] = myUnit.value
+		}
+		// if top was given as a arg, override default
+		if myTop.set {
+			myGlobal.DefaultValues["unit"] = myTop.value
+		}
+	}
 	return myConfigFile.value, myMode.value
 }

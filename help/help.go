@@ -40,8 +40,8 @@ import (
 	"os"
 	"strings"
 
-	myGlobal	"github.com/my10c/linux-monitor-go/global"
-	myUtils		"github.com/my10c/linux-monitor-go/utils"
+	myGlobal "github.com/my10c/linux-monitor-go/global"
+	myUtils "github.com/my10c/linux-monitor-go/utils"
 
 	"github.com/fatih/color"
 )
@@ -135,15 +135,26 @@ func SetupHelp(cfg []string) {
 // Function to show the help information
 func Help(exitVal int) {
 	fmt.Printf("%s", myGlobal.MyInfo)
-	optionList := "<-config config file> <-noalert> <-nostats> <-check mode> <-setup> <-version> <-help>"
-	fmt.Printf("\nUsage : %s\n\tflags: %s\n", myGlobal.MyProgname, optionList)
-	fmt.Printf("\t*config: the configuration file to use, should be full path, use --setup for more information.\n")
-	fmt.Printf("\t*check: mode, this is defined per check, use 'mode help' to see valid modes.\n")
-	fmt.Printf("\tnoalert: do not send alert.\n")
-	fmt.Printf("\tstats: create the stats.\n")
-	fmt.Printf("\tsetup: show the setup guide.\n")
-	fmt.Printf("\tversion: print %s version.\n", myGlobal.MyProgname)
-	fmt.Printf("\thelp: short version of this help page.\n")
-	fmt.Printf("\n\t* == required flag.\n")
+	if strings.HasPrefix(myGlobal.MyProgname, "check-") == true {
+		optionList := "<-config config file> <-noalert> <-nostats> <-check mode> <-setup> <-version> <-help>"
+		fmt.Printf("\nUsage : %s\n\tflags: %s\n", myGlobal.MyProgname, optionList)
+		fmt.Printf("\t*config: the configuration file to use, should be full path, use --setup for more information.\n")
+		fmt.Printf("\t*check: mode, this is defined per check, use 'mode help' to see valid modes.\n")
+		fmt.Printf("\tnoalert: do not send alert.\n")
+		fmt.Printf("\tstats: create the stats.\n")
+		fmt.Printf("\tsetup: show the setup guide.\n")
+		fmt.Printf("\tversion: print %s version.\n", myGlobal.MyProgname)
+		fmt.Printf("\thelp: short version of this help page.\n")
+		fmt.Printf("\n\t* == required flag.\n")
+	}
+	if strings.HasPrefix(myGlobal.MyProgname, "get-") == true {
+		optionList := "<-mode> <-unit> <-top> <-version> <-help>"
+		fmt.Printf("\nUsage : %s\n\tflags: %s\n", myGlobal.MyProgname, optionList)
+		fmt.Printf("\tmode: this is defined per script, use 'mode help' to see valid modes.\n")
+		fmt.Printf("\tunit: the unit to be use, KB, MB, GB or TB, default to %s.\n", myGlobal.MyUnit)
+		fmt.Printf("\ttop: show the given tops resource usage, default show %s\n", myGlobal.MyTop)
+		fmt.Printf("\tversion: print %s version.\n", myGlobal.MyProgname)
+		fmt.Printf("\thelp: short version of this help page.\n")
+	}
 	os.Exit(exitVal)
 }
