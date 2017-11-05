@@ -191,7 +191,7 @@ func getPidMemInfo(processPid, name string, unit uint64) (*processMemStruct, err
 				private = private + keyValue
 			case "Private_Dirty":
 				private = private + keyValue
-			case "Sawp":
+			case "Swap":
 				swap = swap + keyValue
 			}
 		}
