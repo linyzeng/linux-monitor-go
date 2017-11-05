@@ -295,7 +295,7 @@ func InitArgs(cfg []string) (string, string) {
 		}
 		// if top was given as a arg, override default
 		if myTop.set {
-			myGlobal.DefaultValues["unit"] = myTop.value
+			myGlobal.DefaultValues["top"] = myTop.value
 		}
 	}
 	return myConfigFile.value, myMode.value
