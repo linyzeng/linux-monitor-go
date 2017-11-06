@@ -177,8 +177,8 @@ Any other that you would like to see? shoot me an email
 create a work directory then set GOPATH : export GOPATH=full-path-work-directory
 
 ```
-go get github.com/my10c/nagios-plugins-go/check-xxxx
-with xxxx the name of the check
+go get github.com/my10c/linux-monitor-go/xxxx
+with xxxx the name of the check/script
 ```
 
 that's it
