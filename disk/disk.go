@@ -43,9 +43,9 @@ import (
 	"strings"
 	"syscall"
 
-	myGlobal	"github.com/my10c/linux-monitor-go/global"
-	myUtils		"github.com/my10c/linux-monitor-go/utils"
-	myThreshold	"github.com/my10c/linux-monitor-go/threshold"
+	myGlobal "github.com/my10c/linux-monitor-go/global"
+	myThreshold "github.com/my10c/linux-monitor-go/threshold"
+	myUtils "github.com/my10c/linux-monitor-go/utils"
 )
 
 const (
@@ -59,22 +59,22 @@ var (
 )
 
 type parStruct struct {
-	device		string	`json:"device"`
-	mountpoint	string	`json:"mount"`
-	fsType		string	`json:"fstype"`
-	mountState	string	`json:"state"`
+	device     string `json:"device"`
+	mountpoint string `json:"mount"`
+	fsType     string `json:"fstype"`
+	mountState string `json:"state"`
 }
 
 type diskType struct {
-	totalSpace	uint64	`json:"total"`
-	totalUse	uint64	`json:"used"`
-	totalFree	uint64	`json:"free"`
-	totalInodes	uint64	`json:"inodes"`
-	freeInodes	uint64	`json:"freeinodes"`
-	mountPoint	string	`json:"mount"`
-	device		string	`json:"device"`
-	fsType		string	`json:"fstype"`
-	mountState	string	`json:"state"`
+	totalSpace  uint64 `json:"total"`
+	totalUse    uint64 `json:"used"`
+	totalFree   uint64 `json:"free"`
+	totalInodes uint64 `json:"inodes"`
+	freeInodes  uint64 `json:"freeinodes"`
+	mountPoint  string `json:"mount"`
+	device      string `json:"device"`
+	fsType      string `json:"fstype"`
+	mountState  string `json:"state"`
 }
 
 func getPartitions() map[string]parStruct {
@@ -90,7 +90,7 @@ func getPartitions() map[string]parStruct {
 	detectedPartitions := make(map[string]parStruct)
 	// get all lines and walk one at the time
 	lines := strings.Split(string(contents), "\n")
-	for _, line := range(lines) {
+	for _, line := range lines {
 		if line != "" {
 			// we need the first 3 fields : device, mountpoint, type and first word of mount (rw or ro)
 			currDevice := strings.Fields(line)[0]
@@ -124,13 +124,13 @@ func getDiskinfo(path string) *diskType {
 	if err != nil {
 		myUtils.ExitWithNagiosCode(myGlobal.UNKNOWN, err)
 	}
-	disk := &diskType {
-		totalSpace	: fs.Blocks * uint64(fs.Bsize),
-		totalFree	: fs.Bfree * uint64(fs.Bsize),
-		totalUse	: (fs.Blocks * uint64(fs.Bsize)) - (fs.Bfree * uint64(fs.Bsize)),
-		totalInodes	: fs.Files,
-		freeInodes	: fs.Ffree,
-		mountPoint	: path,
+	disk := &diskType{
+		totalSpace:  fs.Blocks * uint64(fs.Bsize),
+		totalFree:   fs.Bfree * uint64(fs.Bsize),
+		totalUse:    (fs.Blocks * uint64(fs.Bsize)) - (fs.Bfree * uint64(fs.Bsize)),
+		totalInodes: fs.Files,
+		freeInodes:  fs.Ffree,
+		mountPoint:  path,
 	}
 	return disk
 }
@@ -159,23 +159,23 @@ func (diskPtr *diskType) GetType() string {
 }
 
 func (diskPtr *diskType) GetSize(unit uint64) uint64 {
-	return diskPtr.totalSpace/unit
+	return diskPtr.totalSpace / unit
 }
 
 func (diskPtr *diskType) GetUse(unit uint64) uint64 {
-	return diskPtr.totalUse/unit
+	return diskPtr.totalUse / unit
 }
 
 func (diskPtr *diskType) GetFree(unit uint64) uint64 {
-	return diskPtr.totalFree/unit
+	return diskPtr.totalFree / unit
 }
 
 func (diskPtr *diskType) GetInodes(unit uint64) uint64 {
-	return diskPtr.totalInodes/unit
+	return diskPtr.totalInodes / unit
 }
 
 func (diskPtr *diskType) GetFreeInodes(unit uint64) uint64 {
-	return diskPtr.freeInodes/unit
+	return diskPtr.freeInodes / unit
 }
 
 func (diskPtr *diskType) GetMountPoint() string {
@@ -209,7 +209,7 @@ func (diskPtr *diskType) CheckFreeInode(warn, crit string, unit uint64) int {
 }
 
 // Function to check if the filesystem is mounted RO
-func (diskPtr *diskType) CheckRO(mntPoint string) int{
+func (diskPtr *diskType) CheckRO(mntPoint string) int {
 	if diskPtr.mountState == "ro" {
 		return 1
 	}
@@ -220,27 +220,27 @@ func (diskPtr *diskType) CheckRO(mntPoint string) int{
 func (diskPtr *diskType) CheckIt(mode string, warn, crit string, unit uint64) int {
 	var result int = 3
 	switch mode {
-		case "diskspace":
-			result = diskPtr.CheckFree(warn, crit, unit)
-		case "inode":
-			result = diskPtr.CheckFreeInode(warn, crit, unit)
-		case "ro":
-			result = diskPtr.CheckRO(diskPtr.GetMountPoint())
+	case "diskspace":
+		result = diskPtr.CheckFree(warn, crit, unit)
+	case "inode":
+		result = diskPtr.CheckFreeInode(warn, crit, unit)
+	case "ro":
+		result = diskPtr.CheckRO(diskPtr.GetMountPoint())
 	}
 	return result
 }
 
 // Function to generate a disk info string
-func (diskPtr *diskType) StatusMsg(mode string, unit uint64) string{
+func (diskPtr *diskType) StatusMsg(mode string, unit uint64) string {
 	var statusMsg string
 	mntPoint := diskPtr.GetMountPoint()
 	switch mode {
-		case "diskspace":
-			statusMsg = fmt.Sprintf("(%s:Free:%d)", mntPoint, diskPtr.GetFree(unit))
-		case "inode":
-			statusMsg = fmt.Sprintf("(%s:Free Inode:%d)", mntPoint, diskPtr.GetFreeInodes(unit))
-		case "ro":
-			statusMsg = fmt.Sprintf("(%s:mount state:%s)", mntPoint, diskPtr.GetState())
+	case "diskspace":
+		statusMsg = fmt.Sprintf("(%s:Free:%d)", mntPoint, diskPtr.GetFree(unit))
+	case "inode":
+		statusMsg = fmt.Sprintf("(%s:Free Inode:%d)", mntPoint, diskPtr.GetFreeInodes(unit))
+	case "ro":
+		statusMsg = fmt.Sprintf("(%s:mount state:%s)", mntPoint, diskPtr.GetState())
 	}
 	return statusMsg
 }

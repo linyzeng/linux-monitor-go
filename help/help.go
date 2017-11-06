@@ -152,9 +152,10 @@ func Help(exitVal int) {
 		fmt.Printf("\nUsage : %s\n\tflags: %s\n", myGlobal.MyProgname, optionList)
 		fmt.Printf("\tmode: this is defined per script, use 'mode help' to see valid modes.\n")
 		fmt.Printf("\tunit: the unit to be use, KB, MB, GB or TB, default to %s.\n", myGlobal.MyUnit)
-		fmt.Printf("\ttop: show the given tops resource usage, default show %s\n", myGlobal.MyTop)
+		fmt.Printf("\t*top: show the given tops resource usage, default show %s\n", myGlobal.MyTop)
 		fmt.Printf("\tversion: print %s version.\n", myGlobal.MyProgname)
 		fmt.Printf("\thelp: short version of this help page.\n")
+		fmt.Printf("\n\t* == only available on certain script.\n")
 	}
 	os.Exit(exitVal)
 }
